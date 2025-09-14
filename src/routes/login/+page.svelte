@@ -1,0 +1,213 @@
+<script>
+  import { login, isLoading } from '$lib/stores/auth.js';
+  import { goto } from '$app/navigation';
+
+  let email = '';
+  let password = '';
+  let errorMessage = '';
+  let successMessage = '';
+  let formErrors = {};
+
+  function validateForm() {
+    formErrors = {};
+
+    // 이메일 검증
+    if (!email) {
+      formErrors.email = '이메일을 입력해주세요.';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      formErrors.email = '올바른 이메일 형식이 아닙니다.';
+    }
+
+    // 비밀번호 검증
+    if (!password) {
+      formErrors.password = '비밀번호를 입력해주세요.';
+    } else if (password.length < 8) {
+      formErrors.password = '비밀번호는 8자 이상이어야 합니다.';
+    }
+
+    return Object.keys(formErrors).length === 0;
+  }
+
+  async function handleLogin() {
+    if (!validateForm()) return;
+
+    errorMessage = '';
+    successMessage = '';
+
+    const result = await login(email, password);
+
+    if (result.success) {
+      successMessage = result.message;
+      setTimeout(() => {
+        goto('/');
+      }, 1500);
+    } else {
+      errorMessage = result.error;
+    }
+  }
+
+  function handleKeyPress(event) {
+    if (event.key === 'Enter') {
+      handleLogin();
+    }
+  }
+</script>
+
+<svelte:head>
+  <title>로그인 - LuckyMesh Casino</title>
+  <meta name="description" content="LuckyMesh Casino에 로그인하여 최고의 카지노 게임을 즐겨보세요." />
+</svelte:head>
+
+<div class="min-h-screen bg-gradient-to-br from-casino-dark via-gray-900 to-black flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+  <div class="max-w-md w-full space-y-8">
+    <!-- 로고 및 헤더 -->
+    <div class="text-center">
+      <a href="/" class="text-4xl font-bold text-casino-gold text-glow">
+        🎰 LuckyMesh
+      </a>
+      <h2 class="mt-6 text-3xl font-bold text-white">
+        계정에 로그인하세요
+      </h2>
+      <p class="mt-2 text-sm text-gray-400">
+        아직 계정이 없으신가요?
+        <a href="/signup" class="text-casino-gold hover:text-yellow-400 transition-colors duration-200">
+          회원가입하기
+        </a>
+      </p>
+    </div>
+
+    <!-- 로그인 폼 -->
+    <div class="bg-black/40 backdrop-blur-sm rounded-xl p-8 border border-casino-gold/20">
+      <form on:submit|preventDefault={handleLogin} class="space-y-6">
+        <!-- 전역 메시지 -->
+        {#if errorMessage}
+          <div class="bg-casino-red/20 border border-casino-red/50 rounded-lg p-4">
+            <div class="flex items-center">
+              <span class="text-casino-red mr-2">❌</span>
+              <span class="text-casino-red text-sm">{errorMessage}</span>
+            </div>
+          </div>
+        {/if}
+
+        {#if successMessage}
+          <div class="bg-casino-green/20 border border-casino-green/50 rounded-lg p-4">
+            <div class="flex items-center">
+              <span class="text-casino-green mr-2">✅</span>
+              <span class="text-casino-green text-sm">{successMessage}</span>
+            </div>
+          </div>
+        {/if}
+
+        <!-- 이메일 입력 -->
+        <div>
+          <label for="email" class="block text-sm font-medium text-gray-300 mb-2">
+            이메일 주소
+          </label>
+          <input
+            id="email"
+            type="email"
+            bind:value={email}
+            on:keypress={handleKeyPress}
+            class="w-full px-4 py-3 bg-gray-900/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-casino-gold focus:ring-1 focus:ring-casino-gold transition-colors duration-200"
+            placeholder="example@email.com"
+            required
+          />
+          {#if formErrors.email}
+            <p class="mt-1 text-sm text-casino-red">{formErrors.email}</p>
+          {/if}
+        </div>
+
+        <!-- 비밀번호 입력 -->
+        <div>
+          <label for="password" class="block text-sm font-medium text-gray-300 mb-2">
+            비밀번호
+          </label>
+          <input
+            id="password"
+            type="password"
+            bind:value={password}
+            on:keypress={handleKeyPress}
+            class="w-full px-4 py-3 bg-gray-900/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-casino-gold focus:ring-1 focus:ring-casino-gold transition-colors duration-200"
+            placeholder="••••••••"
+            required
+          />
+          {#if formErrors.password}
+            <p class="mt-1 text-sm text-casino-red">{formErrors.password}</p>
+          {/if}
+        </div>
+
+        <!-- 추가 옵션 -->
+        <div class="flex items-center justify-between">
+          <div class="flex items-center">
+            <input
+              id="remember-me"
+              name="remember-me"
+              type="checkbox"
+              class="h-4 w-4 text-casino-gold border-gray-600 rounded bg-gray-900 focus:ring-casino-gold"
+            />
+            <label for="remember-me" class="ml-2 block text-sm text-gray-300">
+              로그인 상태 유지
+            </label>
+          </div>
+
+          <div class="text-sm">
+            <a href="/forgot-password" class="text-casino-gold hover:text-yellow-400 transition-colors duration-200">
+              비밀번호를 잊으셨나요?
+            </a>
+          </div>
+        </div>
+
+        <!-- 로그인 버튼 -->
+        <button
+          type="submit"
+          disabled={$isLoading}
+          class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-black bg-casino-gold hover:bg-yellow-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-casino-gold disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+        >
+          {#if $isLoading}
+            <div class="flex items-center">
+              <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-black mr-2"></div>
+              로그인 중...
+            </div>
+          {:else}
+            로그인
+          {/if}
+        </button>
+
+        <!-- 소셜 로그인 (미래 확장용) -->
+        <div class="mt-6">
+          <div class="relative">
+            <div class="absolute inset-0 flex items-center">
+              <div class="w-full border-t border-gray-600"></div>
+            </div>
+            <div class="relative flex justify-center text-sm">
+              <span class="px-2 bg-black text-gray-400">또는</span>
+            </div>
+          </div>
+
+          <div class="mt-6 text-center">
+            <p class="text-sm text-gray-400">
+              소셜 로그인 기능은 곧 제공될 예정입니다.
+            </p>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- 안전성 알림 -->
+    <div class="text-center">
+      <div class="flex items-center justify-center space-x-4 text-sm text-gray-400">
+        <div class="flex items-center">
+          <span class="mr-1">🛡️</span>
+          <span>SSL 보안</span>
+        </div>
+        <div class="flex items-center">
+          <span class="mr-1">🔒</span>
+          <span>개인정보 보호</span>
+        </div>
+      </div>
+      <p class="mt-2 text-xs text-gray-500">
+        18세 이상 이용 가능 | 책임감 있는 게임 문화를 만들어갑니다.
+      </p>
+    </div>
+  </div>
+</div>
