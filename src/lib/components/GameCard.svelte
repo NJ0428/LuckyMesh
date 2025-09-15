@@ -3,57 +3,47 @@
   export let featured = false;
 </script>
 
-<div class="bg-gradient-to-br from-gray-900 to-black rounded-xl overflow-hidden shadow-2xl card-hover border border-casino-gold/20">
+<div class="glass-card overflow-hidden shadow-2xl card-hover group">
   <!-- 게임 이미지/아이콘 -->
-  <div class="relative h-48 bg-gradient-to-br from-casino-gold/20 to-casino-red/20 flex items-center justify-center">
+  <div class="relative h-48 bg-gradient-to-br {game.id === 'blackjack' ? 'from-pastel-pink to-pastel-lavender' : game.id === 'baccarat' ? 'from-pastel-mint to-pastel-sky' : 'from-pastel-peach to-pastel-cream'} flex items-center justify-center">
     <div class="text-6xl mb-4">
       {#if game.id === 'blackjack'}🃏
-      {:else if game.id === 'baccarat'}♠️
-      {:else if game.id === 'roulette'}🎰
+      {:else if game.id === 'baccarat'}🎴
+      {:else if game.id === 'roulette'}🎡
       {/if}
     </div>
     {#if featured}
-      <div class="absolute top-4 right-4 bg-casino-gold text-black text-xs font-bold px-2 py-1 rounded-full">
-        인기
+      <div class="absolute top-4 right-4 bg-gradient-to-r from-primary-soft-pink to-accent-rose-gold text-white text-xs font-bold px-3 py-1 rounded-full font-poppins">
+        ⭐ 인기
       </div>
     {/if}
   </div>
 
   <!-- 게임 정보 -->
-  <div class="p-6">
-    <div class="mb-3">
-      <h3 class="text-xl font-bold text-casino-gold mb-1">{game.name}</h3>
-      <p class="text-gray-300 text-sm">{game.englishName}</p>
+  <div class="p-8">
+    <div class="text-center mb-6">
+      <h3 class="text-2xl font-playfair font-bold text-gray-800 mb-2">{game.name}</h3>
+      <p class="text-gray-600 font-poppins">{game.description}</p>
     </div>
 
-    <p class="text-gray-300 text-sm mb-4 leading-relaxed">{game.description}</p>
-
     <!-- 게임 통계 -->
-    <div class="grid grid-cols-2 gap-3 mb-4 text-sm">
-      <div class="bg-black/50 rounded-lg p-3">
-        <div class="text-gray-400">최소 베팅</div>
-        <div class="text-casino-gold font-semibold">{game.minBet}</div>
+    <div class="space-y-4 mb-6">
+      <div class="flex justify-between items-center">
+        <span class="text-gray-600 font-poppins">환원율</span>
+        <span class="font-semibold {game.id === 'blackjack' ? 'text-primary-soft-pink' : game.id === 'baccarat' ? 'text-primary-soft-mint' : 'text-primary-soft-peach'}">{game.rtp}</span>
       </div>
-      <div class="bg-black/50 rounded-lg p-3">
-        <div class="text-gray-400">최대 베팅</div>
-        <div class="text-casino-gold font-semibold">{game.maxBet}</div>
-      </div>
-      <div class="bg-black/50 rounded-lg p-3">
-        <div class="text-gray-400">하우스 엣지</div>
-        <div class="text-casino-green font-semibold">{game.houseEdge}</div>
-      </div>
-      <div class="bg-black/50 rounded-lg p-3">
-        <div class="text-gray-400">환원율 (RTP)</div>
-        <div class="text-casino-green font-semibold">{game.rtp}</div>
+      <div class="flex justify-between items-center">
+        <span class="text-gray-600 font-poppins">베팅 범위</span>
+        <span class="font-semibold {game.id === 'blackjack' ? 'text-primary-soft-purple' : game.id === 'baccarat' ? 'text-accent-mint-cream' : 'text-accent-coral'}">{game.minBet} - {game.maxBet}</span>
       </div>
     </div>
 
     <!-- 게임 특징 -->
-    <div class="mb-4">
-      <div class="text-gray-400 text-xs mb-2">게임 특징</div>
+    <div class="mb-6">
+      <div class="text-gray-500 text-sm mb-3 font-poppins">게임 특징</div>
       <div class="flex flex-wrap gap-2">
         {#each game.features as feature}
-          <span class="bg-casino-gold/20 text-casino-gold text-xs px-2 py-1 rounded-full">
+          <span class="bg-white/40 text-gray-700 text-xs px-3 py-1 rounded-full font-poppins">
             {feature}
           </span>
         {/each}
@@ -61,13 +51,8 @@
     </div>
 
     <!-- 액션 버튼 -->
-    <div class="flex gap-3">
-      <a href="/{game.id}" class="btn-primary flex-1 text-center text-sm py-2">
-        게임 규칙 보기
-      </a>
-      <button class="btn-secondary text-sm px-4 py-2">
-        지금 플레이
-      </button>
-    </div>
+    <button class="w-full py-3 bg-gradient-to-r {game.id === 'blackjack' ? 'from-primary-soft-pink to-accent-rose-gold' : game.id === 'baccarat' ? 'from-primary-soft-mint to-accent-mint-cream' : 'from-primary-soft-peach to-accent-coral'} text-white rounded-full font-poppins font-semibold hover:shadow-lg transition-all group-hover:scale-105">
+      게임 시작
+    </button>
   </div>
 </div>

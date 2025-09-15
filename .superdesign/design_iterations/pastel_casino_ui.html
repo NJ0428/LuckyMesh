@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌸 LuckyMesh Casino - Pastel Edition</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <link rel="stylesheet" href="pastel_theme.css">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'pastel-pink': '#FFE1E6',
+                        'pastel-lavender': '#E8E1FF',
+                        'pastel-mint': '#E1FFF1',
+                        'pastel-peach': '#FFE8D1',
+                        'pastel-sky': '#D1E8FF',
+                        'pastel-cream': '#FFF8E1',
+                        'primary-soft-pink': '#F8BBD9',
+                        'primary-soft-purple': '#C8A2C8',
+                        'primary-soft-mint': '#B8E6CC',
+                        'primary-soft-peach': '#FFCAB0',
+                        'primary-soft-blue': '#A8D8EA',
+                        'accent-rose-gold': '#F7CAC9',
+                        'accent-lavender-mist': '#DDA0DD',
+                        'accent-mint-cream': '#98FB98',
+                        'accent-coral': '#FF9999',
+                        'accent-powder-blue': '#B0E0E6'
+                    },
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif'],
+                        'poppins': ['Poppins', 'sans-serif'],
+                        'playfair': ['Playfair Display', 'serif']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #FFE1E6 0%, #E8E1FF 25%, #E1FFF1 50%, #FFE8D1 75%, #D1E8FF 100%);
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+
+        .floating {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .floating-delayed {
+            animation: float 3s ease-in-out infinite;
+            animation-delay: 1s;
+        }
+
+        .floating-delayed-2 {
+            animation: float 3s ease-in-out infinite;
+            animation-delay: 2s;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .shimmer {
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            background-size: 200% 100%;
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% {
+                background-position: -200% 0;
+            }
+
+            100% {
+                background-position: 200% 0;
+            }
+        }
+
+        .pulse-glow {
+            animation: pulseGlow 2s ease-in-out infinite;
+        }
+
+        @keyframes pulseGlow {
+
+            0%,
+            100% {
+                box-shadow: 0 0 20px rgba(248, 187, 217, 0.3);
+            }
+
+            50% {
+                box-shadow: 0 0 30px rgba(248, 187, 217, 0.6);
+            }
+        }
+
+        .hover-lift {
+            transition: all 0.3s ease;
+        }
+
+        .hover-lift:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 40px rgba(184, 230, 204, 0.25);
+        }
+    </style>
+</head>
+
+<body class="gradient-bg min-h-screen">
+    <!-- Navigation -->
+    <nav class="glass-card sticky top-0 z-50 border-b border-white/20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-2">
+                    <span class="text-2xl">🌸</span>
+                    <span
+                        class="font-playfair font-bold text-xl bg-gradient-to-r from-primary-soft-pink to-primary-soft-purple bg-clip-text text-transparent">
+                        LuckyMesh Casino
+                    </span>
+                </div>
+
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="#" class="text-gray-700 hover:text-primary-soft-purple transition-colors">홈</a>
+                    <a href="#" class="text-gray-700 hover:text-primary-soft-purple transition-colors">게임</a>
+                    <a href="#" class="text-gray-700 hover:text-primary-soft-purple transition-colors">프로모션</a>
+                    <a href="#" class="text-gray-700 hover:text-primary-soft-purple transition-colors">고객지원</a>
+                </div>
+
+                <div class="flex items-center space-x-4">
+                    <button
+                        class="px-4 py-2 text-gray-700 hover:text-primary-soft-purple transition-colors">로그인</button>
+                    <button
+                        class="px-6 py-2 bg-gradient-to-r from-primary-soft-pink to-primary-soft-purple text-white rounded-full hover:shadow-lg transition-all hover:scale-105">
+                        회원가입
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="relative py-20 overflow-hidden">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <!-- Floating Decorative Elements -->
+            <div
+                class="absolute top-10 left-10 w-20 h-20 bg-gradient-to-br from-pastel-pink to-pastel-lavender rounded-full opacity-60 floating">
+            </div>
+            <div
+                class="absolute top-20 right-20 w-16 h-16 bg-gradient-to-br from-pastel-mint to-pastel-sky rounded-full opacity-60 floating-delayed">
+            </div>
+            <div
+                class="absolute bottom-20 left-1/4 w-12 h-12 bg-gradient-to-br from-pastel-peach to-pastel-cream rounded-full opacity-60 floating-delayed-2">
+            </div>
+
+            <div class="relative z-10">
+                <h1 class="text-6xl md:text-8xl font-playfair font-bold mb-6">
+                    <span
+                        class="bg-gradient-to-r from-primary-soft-pink via-primary-soft-purple to-primary-soft-mint bg-clip-text text-transparent">
+                        🎰 LuckyMesh
+                    </span>
+                </h1>
+                <p class="text-2xl md:text-3xl text-gray-600 mb-8 font-poppins">
+                    파스텔 드림 카지노에서 특별한 경험을 만나보세요
+                </p>
+
+                <div class="flex flex-col sm:flex-row gap-6 justify-center mb-16">
+                    <button
+                        class="px-8 py-4 bg-gradient-to-r from-primary-soft-pink to-accent-rose-gold text-white rounded-full font-poppins font-semibold text-lg hover:shadow-xl transition-all hover:scale-105 pulse-glow">
+                        🌟 지금 시작하기
+                    </button>
+                    <button
+                        class="px-8 py-4 glass-card text-gray-700 rounded-full font-poppins font-semibold text-lg hover:shadow-xl transition-all hover:scale-105">
+                        🎮 게임 둘러보기
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                <div class="glass-card rounded-2xl p-6 text-center hover-lift">
+                    <div class="text-4xl mb-3">🎮</div>
+                    <div
+                        class="text-3xl font-bold bg-gradient-to-r from-primary-soft-pink to-primary-soft-purple bg-clip-text text-transparent">
+                        3+</div>
+                    <div class="text-gray-600 font-poppins">게임 종류</div>
+                </div>
+
+                <div class="glass-card rounded-2xl p-6 text-center hover-lift">
+                    <div class="text-4xl mb-3">💎</div>
+                    <div
+                        class="text-3xl font-bold bg-gradient-to-r from-primary-soft-mint to-accent-mint-cream bg-clip-text text-transparent">
+                        99.5%</div>
+                    <div class="text-gray-600 font-poppins">최고 환원율</div>
+                </div>
+
+                <div class="glass-card rounded-2xl p-6 text-center hover-lift">
+                    <div class="text-4xl mb-3">🎧</div>
+                    <div
+                        class="text-3xl font-bold bg-gradient-to-r from-primary-soft-peach to-accent-coral bg-clip-text text-transparent">
+                        24/7</div>
+                    <div class="text-gray-600 font-poppins">고객 지원</div>
+                </div>
+
+                <div class="glass-card rounded-2xl p-6 text-center hover-lift">
+                    <div class="text-4xl mb-3">🛡️</div>
+                    <div
+                        class="text-3xl font-bold bg-gradient-to-r from-primary-soft-blue to-accent-powder-blue bg-clip-text text-transparent">
+                        100%</div>
+                    <div class="text-gray-600 font-poppins">안전 보장</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Games Section -->
+    <section class="py-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2
+                    class="text-5xl font-playfair font-bold mb-4 bg-gradient-to-r from-primary-soft-pink to-primary-soft-purple bg-clip-text text-transparent">
+                    ✨ 인기 게임
+                </h2>
+                <p class="text-xl text-gray-600 font-poppins">파스텔 드림에서 만나는 클래식 카지노 게임들</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Blackjack Card -->
+                <div class="glass-card rounded-3xl p-8 hover-lift group">
+                    <div class="text-center mb-6">
+                        <div class="text-6xl mb-4">🃏</div>
+                        <h3 class="text-2xl font-playfair font-bold text-gray-800 mb-2">블랙잭</h3>
+                        <p class="text-gray-600 font-poppins">전략과 운이 만나는 클래식 게임</p>
+                    </div>
+
+                    <div class="space-y-4 mb-6">
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">환원율</span>
+                            <span class="font-semibold text-primary-soft-pink">99.5%</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">베팅 범위</span>
+                            <span class="font-semibold text-primary-soft-purple">₩1,000 - ₩100,000</span>
+                        </div>
+                    </div>
+
+                    <button
+                        class="w-full py-3 bg-gradient-to-r from-primary-soft-pink to-accent-rose-gold text-white rounded-full font-poppins font-semibold hover:shadow-lg transition-all group-hover:scale-105">
+                        게임 시작
+                    </button>
+                </div>
+
+                <!-- Baccarat Card -->
+                <div class="glass-card rounded-3xl p-8 hover-lift group">
+                    <div class="text-center mb-6">
+                        <div class="text-6xl mb-4">🎴</div>
+                        <h3 class="text-2xl font-playfair font-bold text-gray-800 mb-2">바카라</h3>
+                        <p class="text-gray-600 font-poppins">우아함의 대명사, 바카라</p>
+                    </div>
+
+                    <div class="space-y-4 mb-6">
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">환원율</span>
+                            <span class="font-semibold text-primary-soft-mint">98.94%</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">베팅 범위</span>
+                            <span class="font-semibold text-accent-mint-cream">₩2,000 - ₩500,000</span>
+                        </div>
+                    </div>
+
+                    <button
+                        class="w-full py-3 bg-gradient-to-r from-primary-soft-mint to-accent-mint-cream text-white rounded-full font-poppins font-semibold hover:shadow-lg transition-all group-hover:scale-105">
+                        게임 시작
+                    </button>
+                </div>
+
+                <!-- Roulette Card -->
+                <div class="glass-card rounded-3xl p-8 hover-lift group">
+                    <div class="text-center mb-6">
+                        <div class="text-6xl mb-4">🎡</div>
+                        <h3 class="text-2xl font-playfair font-bold text-gray-800 mb-2">룰렛</h3>
+                        <p class="text-gray-600 font-poppins">운명의 바퀴를 돌려보세요</p>
+                    </div>
+
+                    <div class="space-y-4 mb-6">
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">환원율</span>
+                            <span class="font-semibold text-primary-soft-peach">97.3%</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">베팅 범위</span>
+                            <span class="font-semibold text-accent-coral">₩500 - ₩50,000</span>
+                        </div>
+                    </div>
+
+                    <button
+                        class="w-full py-3 bg-gradient-to-r from-primary-soft-peach to-accent-coral text-white rounded-full font-poppins font-semibold hover:shadow-lg transition-all group-hover:scale-105">
+                        게임 시작
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Promotions Section -->
+    <section class="py-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2
+                    class="text-5xl font-playfair font-bold mb-4 bg-gradient-to-r from-primary-soft-purple to-primary-soft-blue bg-clip-text text-transparent">
+                    🌈 특별 혜택
+                </h2>
+                <p class="text-xl text-gray-600 font-poppins">파스텔 드림만의 독점 프로모션</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div
+                    class="bg-gradient-to-br from-pastel-pink to-pastel-lavender rounded-3xl p-8 text-center hover-lift">
+                    <div class="text-5xl mb-4">🎁</div>
+                    <h3 class="text-2xl font-playfair font-bold text-gray-800 mb-3">신규 가입 보너스</h3>
+                    <p class="text-gray-700 mb-4 font-poppins">첫 입금 시 100% 매칭 보너스</p>
+                    <div class="text-3xl font-bold text-white mb-6">최대 50만원</div>
+                    <button
+                        class="bg-white text-gray-800 font-poppins font-semibold py-3 px-6 rounded-full hover:shadow-lg transition-all hover:scale-105">
+                        자세히 보기
+                    </button>
+                </div>
+
+                <div class="bg-gradient-to-br from-pastel-mint to-pastel-sky rounded-3xl p-8 text-center hover-lift">
+                    <div class="text-5xl mb-4">💰</div>
+                    <h3 class="text-2xl font-playfair font-bold text-gray-800 mb-3">주간 캐시백</h3>
+                    <p class="text-gray-700 mb-4 font-poppins">매주 월요일 손실 금액의 10% 환급</p>
+                    <div class="text-3xl font-bold text-white mb-6">최대 10만원</div>
+                    <button
+                        class="bg-white text-gray-800 font-poppins font-semibold py-3 px-6 rounded-full hover:shadow-lg transition-all hover:scale-105">
+                        자세히 보기
+                    </button>
+                </div>
+
+                <div class="bg-gradient-to-br from-pastel-peach to-pastel-cream rounded-3xl p-8 text-center hover-lift">
+                    <div class="text-5xl mb-4">👑</div>
+                    <h3 class="text-2xl font-playfair font-bold text-gray-800 mb-3">VIP 프로그램</h3>
+                    <p class="text-gray-700 mb-4 font-poppins">레벨업할수록 더 많은 혜택</p>
+                    <div class="text-3xl font-bold text-white mb-6">독점 혜택</div>
+                    <button
+                        class="bg-white text-gray-800 font-poppins font-semibold py-3 px-6 rounded-full hover:shadow-lg transition-all hover:scale-105">
+                        자세히 보기
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-20">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <div class="glass-card rounded-3xl p-12">
+                <h2
+                    class="text-4xl font-playfair font-bold mb-6 bg-gradient-to-r from-primary-soft-pink to-primary-soft-purple bg-clip-text text-transparent">
+                    🌸 지금 파스텔 드림과 함께 시작하세요
+                </h2>
+                <p class="text-xl text-gray-600 mb-8 font-poppins">
+                    신규 회원 가입 시 특별 보너스와 함께 꿈같은 카지노 경험을 시작하실 수 있습니다.
+                </p>
+                <div class="flex flex-col sm:flex-row gap-6 justify-center">
+                    <button
+                        class="px-8 py-4 bg-gradient-to-r from-primary-soft-pink to-accent-rose-gold text-white font-poppins font-bold rounded-full hover:shadow-xl transition-all hover:scale-105 pulse-glow">
+                        ✨ 무료 회원가입
+                    </button>
+                    <button
+                        class="px-8 py-4 glass-card text-gray-700 font-poppins font-bold rounded-full hover:shadow-xl transition-all hover:scale-105">
+                        🎮 게임 체험하기
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="glass-card mt-20 border-t border-white/20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <div class="flex items-center space-x-2 mb-4">
+                        <span class="text-2xl">🌸</span>
+                        <span
+                            class="font-playfair font-bold text-xl bg-gradient-to-r from-primary-soft-pink to-primary-soft-purple bg-clip-text text-transparent">
+                            LuckyMesh Casino
+                        </span>
+                    </div>
+                    <p class="text-gray-600 font-poppins">파스텔 드림에서 만나는 특별한 카지노 경험</p>
+                </div>
+
+                <div>
+                    <h3 class="font-poppins font-semibold text-gray-800 mb-4">게임</h3>
+                    <ul class="space-y-2 text-gray-600">
+                        <li><a href="#" class="hover:text-primary-soft-purple transition-colors">블랙잭</a></li>
+                        <li><a href="#" class="hover:text-primary-soft-purple transition-colors">바카라</a></li>
+                        <li><a href="#" class="hover:text-primary-soft-purple transition-colors">룰렛</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h3 class="font-poppins font-semibold text-gray-800 mb-4">고객지원</h3>
+                    <ul class="space-y-2 text-gray-600">
+                        <li><a href="#" class="hover:text-primary-soft-purple transition-colors">FAQ</a></li>
+                        <li><a href="#" class="hover:text-primary-soft-purple transition-colors">라이브 채팅</a></li>
+                        <li><a href="#" class="hover:text-primary-soft-purple transition-colors">이메일 지원</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h3 class="font-poppins font-semibold text-gray-800 mb-4">정보</h3>
+                    <ul class="space-y-2 text-gray-600">
+                        <li><a href="#" class="hover:text-primary-soft-purple transition-colors">이용약관</a></li>
+                        <li><a href="#" class="hover:text-primary-soft-purple transition-colors">개인정보처리방침</a></li>
+                        <li><a href="#" class="hover:text-primary-soft-purple transition-colors">책임감 있는 게임</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="border-t border-white/20 mt-8 pt-8 text-center">
+                <p class="text-gray-600 font-poppins">&copy; 2024 LuckyMesh Casino. 모든 권리 보유.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // 부드러운 스크롤 효과
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // 카드 호버 효과 강화
+        document.querySelectorAll('.hover-lift').forEach(card => {
+            card.addEventListener('mouseenter', function () {
+                this.style.transform = 'translateY(-12px) scale(1.02)';
+            });
+
+            card.addEventListener('mouseleave', function () {
+                this.style.transform = 'translateY(0) scale(1)';
+            });
+        });
+
+        // 버튼 클릭 효과
+        document.querySelectorAll('button').forEach(button => {
+            button.addEventListener('click', function (e) {
+                // 리플 효과 생성
+                const ripple = document.createElement('span');
+                const rect = this.getBoundingClientRect();
+                const size = Math.max(rect.width, rect.height);
+                const x = e.clientX - rect.left - size / 2;
+                const y = e.clientY - rect.top - size / 2;
+
+                ripple.style.width = ripple.style.height = size + 'px';
+                ripple.style.left = x + 'px';
+                ripple.style.top = y + 'px';
+                ripple.classList.add('ripple');
+
+                this.appendChild(ripple);
+
+                setTimeout(() => {
+                    ripple.remove();
+                }, 600);
+            });
+        });
+
+        // 스크롤 애니메이션
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        // 애니메이션 대상 요소들 관찰
+        document.querySelectorAll('.glass-card, .hover-lift').forEach(el => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(30px)';
+            el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+            observer.observe(el);
+        });
+    </script>
+</body>
+
+</html>

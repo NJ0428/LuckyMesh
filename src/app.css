@@ -1,27 +1,184 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   body {
-    font-family: 'Georgia', serif;
+    font-family: 'Inter', 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #FFE1E6 0%, #E8E1FF 25%, #E1FFF1 50%, #FFE8D1 75%, #D1E8FF 100%);
+    min-height: 100vh;
   }
 }
 
 @layer components {
   .btn-primary {
-    @apply bg-casino-gold text-black px-6 py-3 rounded-lg font-bold hover:bg-yellow-400 transition-colors duration-200;
+    @apply bg-gradient-to-r from-primary-soft-pink to-accent-rose-gold text-white px-6 py-3 rounded-full font-poppins font-semibold hover:shadow-lg transition-all duration-300 hover:scale-105;
   }
 
   .btn-secondary {
-    @apply bg-transparent border-2 border-casino-gold text-casino-gold px-6 py-3 rounded-lg font-bold hover:bg-casino-gold hover:text-black transition-all duration-200;
+    @apply bg-white/25 backdrop-blur-sm border border-white/20 text-gray-700 px-6 py-3 rounded-full font-poppins font-semibold hover:shadow-lg transition-all duration-300 hover:scale-105;
+  }
+
+  .glass-card {
+    @apply bg-white/25 backdrop-blur-sm border border-white/20 rounded-2xl shadow-lg;
   }
 
   .card-hover {
-    @apply transition-transform duration-300 hover:scale-105 hover:shadow-2xl;
+    @apply transition-all duration-300 hover:scale-105 hover:-translate-y-2;
   }
 
   .text-glow {
-    text-shadow: 0 0 10px currentColor;
+    text-shadow: 0 0 20px rgba(248, 187, 217, 0.5);
   }
+
+  .pastel-gradient-text {
+    @apply bg-gradient-to-r from-primary-soft-pink via-primary-soft-purple to-primary-soft-mint bg-clip-text text-transparent;
+  }
+
+  .floating {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  .floating-delayed {
+    animation: float 3s ease-in-out infinite;
+    animation-delay: 1s;
+  }
+
+  .floating-delayed-2 {
+    animation: float 3s ease-in-out infinite;
+    animation-delay: 2s;
+  }
+
+  .pulse-glow {
+    animation: pulseGlow 2s ease-in-out infinite;
+  }
+
+  .shimmer {
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+    background-size: 200% 100%;
+    animation: shimmer 2s infinite;
+  }
+}
+
+@keyframes float {
+
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes pulseGlow {
+
+  0%,
+  100% {
+    box-shadow: 0 0 20px rgba(248, 187, 217, 0.3);
+  }
+
+  50% {
+    box-shadow: 0 0 30px rgba(248, 187, 217, 0.6);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* 
+반응형 최적화 */
+@media (max-width: 768px) {
+  .pastel-gradient-text {
+    font-size: 3rem !important;
+  }
+
+  .floating-element {
+    display: none;
+  }
+
+  .glass-card {
+    margin: 0.5rem;
+  }
+}
+
+/* 접근성 개선 */
+@media (prefers-reduced-motion: reduce) {
+
+  .floating,
+  .floating-delayed,
+  .floating-delayed-2,
+  .pulse-glow,
+  .shimmer {
+    animation: none !important;
+  }
+
+  .card-hover:hover {
+    transform: none !important;
+  }
+}
+
+/* 다크모드 지원 */
+@media (prefers-color-scheme: dark) {
+  .glass-card {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+}
+
+/* 고대비 모드 지원 */
+@media (prefers-contrast: high) {
+  .pastel-gradient-text {
+    background: linear-gradient(135deg, #000 0%, #333 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+}
+
+/* 애니메이
+션 키프레임 */
+@keyframes ripple {
+  to {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+@keyframes successPop {
+  0% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.2);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-in {
+  animation: slideInUp 0.6s ease-out;
 }
