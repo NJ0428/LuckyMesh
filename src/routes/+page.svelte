@@ -88,8 +88,8 @@
     <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
       <PastelCard 
         gradient={true} 
-        gradientFrom="pastel-pink" 
-        gradientTo="pastel-lavender"
+        gradientFrom="pastel-pink"
+        gradientTo="pastel-peach"
         padding="p-8"
         hover={true}
       >
@@ -104,8 +104,8 @@
 
       <PastelCard 
         gradient={true} 
-        gradientFrom="pastel-mint" 
-        gradientTo="pastel-sky"
+        gradientFrom="pastel-mint"
+        gradientTo="pastel-cream"
         padding="p-8"
         hover={true}
       >
@@ -120,8 +120,8 @@
 
       <PastelCard 
         gradient={true} 
-        gradientFrom="pastel-peach" 
-        gradientTo="pastel-cream"
+        gradientFrom="pastel-peach"
+        gradientTo="pastel-sky"
         padding="p-8"
         hover={true}
       >

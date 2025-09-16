@@ -4,7 +4,7 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Pastel Casino Color Palette
+        // Pastel Background Colors
         'pastel-pink': '#FFE1E6',
         'pastel-lavender': '#E8E1FF',
         'pastel-mint': '#E1FFF1',
@@ -12,26 +12,26 @@ export default {
         'pastel-sky': '#D1E8FF',
         'pastel-cream': '#FFF8E1',
 
-        // Primary Colors
-        'primary-soft-pink': '#F8BBD9',
-        'primary-soft-purple': '#C8A2C8',
-        'primary-soft-mint': '#B8E6CC',
-        'primary-soft-peach': '#FFCAB0',
-        'primary-soft-blue': '#A8D8EA',
+        // Primary Warm Colors
+        'primary-soft-pink': '#F4A261',
+        'primary-soft-purple': '#E76F51',
+        'primary-soft-mint': '#2A9D8F',
+        'primary-soft-peach': '#E9C46A',
+        'primary-soft-blue': '#264653',
 
-        // Accent Colors
-        'accent-rose-gold': '#F7CAC9',
-        'accent-lavender-mist': '#DDA0DD',
-        'accent-mint-cream': '#98FB98',
-        'accent-coral': '#FF9999',
-        'accent-powder-blue': '#B0E0E6',
+        // Accent Warm Colors
+        'accent-rose-gold': '#F4A261',
+        'accent-lavender-mist': '#E76F51',
+        'accent-mint-cream': '#2A9D8F',
+        'accent-coral': '#E9C46A',
+        'accent-powder-blue': '#264653',
 
         // Legacy casino colors (for backward compatibility)
         casino: {
-          gold: '#F7CAC9', // Changed to pastel rose gold
-          dark: '#FAFAFA', // Changed to light neutral
-          red: '#FF9999', // Changed to pastel coral
-          green: '#98FB98' // Changed to pastel mint
+          gold: '#F4A261', // Changed to warm gold
+          dark: '#264653', // Changed to warm dark
+          red: '#E76F51', // Changed to warm red
+          green: '#2A9D8F' // Changed to warm green
         }
       },
       fontFamily: {

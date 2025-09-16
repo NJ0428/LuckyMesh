@@ -5,7 +5,7 @@
 
 <div class="glass-card overflow-hidden shadow-2xl card-hover group">
   <!-- 게임 이미지/아이콘 -->
-  <div class="relative h-48 bg-gradient-to-br {game.id === 'blackjack' ? 'from-pastel-pink to-pastel-lavender' : game.id === 'baccarat' ? 'from-pastel-mint to-pastel-sky' : 'from-pastel-peach to-pastel-cream'} flex items-center justify-center">
+  <div class="relative h-48 bg-gradient-to-br {game.id === 'blackjack' ? 'from-pastel-pink to-pastel-peach' : game.id === 'baccarat' ? 'from-pastel-mint to-pastel-cream' : 'from-pastel-peach to-pastel-sky'} flex items-center justify-center">
     <div class="text-6xl mb-4">
       {#if game.id === 'blackjack'}🃏
       {:else if game.id === 'baccarat'}🎴

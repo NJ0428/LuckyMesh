@@ -3,9 +3,9 @@
   
   export let count = 6;
   export let colors = [
-    'from-pastel-pink to-pastel-lavender',
-    'from-pastel-mint to-pastel-sky', 
-    'from-pastel-peach to-pastel-cream'
+    'from-pastel-pink to-pastel-peach',
+    'from-pastel-mint to-pastel-cream',
+    'from-pastel-peach to-pastel-sky'
   ];
   
   let elements = [];

@@ -7,7 +7,7 @@
   export let glow = false;
   export let gradient = false;
   export let gradientFrom = 'pastel-pink';
-  export let gradientTo = 'pastel-lavender';
+  export let gradientTo = 'pastel-peach';
   
   let cardElement;
   
@@ -55,7 +55,7 @@
   
   :global(.card-hover:hover) {
     transform: translateY(-8px) scale(1.02);
-    box-shadow: 0 20px 40px rgba(184, 230, 204, 0.25);
+    box-shadow: 0 20px 40px rgba(42, 157, 143, 0.25);
   }
   
   :global(.pulse-glow) {
@@ -63,11 +63,11 @@
   }
   
   @keyframes pulseGlow {
-    0%, 100% { 
-      box-shadow: 0 0 20px rgba(248, 187, 217, 0.3);
+    0%, 100% {
+      box-shadow: 0 0 20px rgba(244, 162, 97, 0.3);
     }
-    50% { 
-      box-shadow: 0 0 30px rgba(248, 187, 217, 0.6);
+    50% {
+      box-shadow: 0 0 30px rgba(244, 162, 97, 0.6);
     }
   }
 </style>
