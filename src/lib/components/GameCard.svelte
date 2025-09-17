@@ -51,8 +51,8 @@
     </div>
 
     <!-- 액션 버튼 -->
-    <button class="w-full py-3 bg-gradient-to-r {game.id === 'blackjack' ? 'from-primary-soft-pink to-accent-rose-gold' : game.id === 'baccarat' ? 'from-primary-soft-mint to-accent-mint-cream' : 'from-primary-soft-peach to-accent-coral'} text-white rounded-full font-poppins font-semibold hover:shadow-lg transition-all group-hover:scale-105">
+    <a href="/{game.id}" class="block w-full py-3 bg-gradient-to-r {game.id === 'blackjack' ? 'from-primary-soft-pink to-accent-rose-gold' : game.id === 'baccarat' ? 'from-primary-soft-mint to-accent-mint-cream' : 'from-primary-soft-peach to-accent-coral'} text-white rounded-full font-poppins font-semibold hover:shadow-lg transition-all group-hover:scale-105 text-center">
       게임 시작
-    </button>
+    </a>
   </div>
 </div>
