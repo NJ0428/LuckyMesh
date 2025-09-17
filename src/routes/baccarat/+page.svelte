@@ -1,305 +1,296 @@
 <script>
-  import { games } from '$lib/data/games.js';
+  import { onMount } from 'svelte';
+  import { baccaratStore, baccaratActions } from '$lib/stores/baccarat.js';
+  import PlayingCard from '$lib/components/PlayingCard.svelte';
+  import PastelCard from '$lib/components/PastelCard.svelte';
+  import PastelButton from '$lib/components/PastelButton.svelte';
 
-  const baccarat = games.find(game => game.id === 'baccarat');
+  let gameState;
+  let selectedBetAmount = 100;
+  let showRules = false;
 
-  const thirdCardRules = [
-    { player: '0-5', action: '3번째 카드를 받습니다' },
-    { player: '6-7', action: '스탠드합니다' },
-    { player: '8-9', action: '내추럴 - 게임 종료' }
+  $: gameState = $baccaratStore;
+
+  const betOptions = [10, 25, 50, 100, 250, 500];
+  const betTypes = [
+    { key: 'player', label: '플레이어', payout: '1:1', color: 'from-blue-500 to-blue-600' },
+    { key: 'banker', label: '뱅커', payout: '1:1 (-5%)', color: 'from-red-500 to-red-600' },
+    { key: 'tie', label: '타이', payout: '8:1', color: 'from-green-500 to-green-600' },
+    { key: 'playerPair', label: 'P 페어', payout: '11:1', color: 'from-purple-500 to-purple-600' },
+    { key: 'bankerPair', label: 'B 페어', payout: '11:1', color: 'from-orange-500 to-orange-600' }
   ];
 
-  const bankerRules = [
-    { banker: '0-2', condition: '항상 카드를 받습니다' },
-    { banker: '3', condition: '플레이어 3번째 카드가 8이 아니면 받습니다' },
-    { banker: '4', condition: '플레이어 3번째 카드가 2-7이면 받습니다' },
-    { banker: '5', condition: '플레이어 3번째 카드가 4-7이면 받습니다' },
-    { banker: '6', condition: '플레이어 3번째 카드가 6-7이면 받습니다' },
-    { banker: '7', condition: '스탠드합니다' }
-  ];
+  function placeBet(betType) {
+    if (gameState.balance >= selectedBetAmount) {
+      baccaratActions.placeBet(betType, selectedBetAmount);
+    }
+  }
 
-  const bettingTypes = [
-    { name: '플레이어 베팅', description: '플레이어가 승리할 때', payout: '1:1', commission: '없음' },
-    { name: '뱅커 베팅', description: '뱅커가 승리할 때', payout: '1:1', commission: '5%' },
-    { name: '타이 베팅', description: '무승부일 때', payout: '8:1', commission: '없음' },
-    { name: '플레이어 페어', description: '플레이어 처음 2장이 페어', payout: '11:1', commission: '없음' },
-    { name: '뱅커 페어', description: '뱅커 처음 2장이 페어', payout: '11:1', commission: '없음' }
-  ];
-
-  const strategies = [
-    { title: '뱅커 베팅 선호', description: '가장 낮은 하우스 엣지 (1.06%)', icon: '🏦' },
-    { title: '타이 베팅 피하기', description: '높은 하우스 엣지 (14.4%)', icon: '❌' },
-    { title: '패턴 추적 자제', description: '각 게임은 독립적인 확률', icon: '📊' },
-    { title: '자금 관리', description: '명확한 손실 한도 설정', icon: '💰' }
-  ];
+  function formatCurrency(amount) {
+    return new Intl.NumberFormat('ko-KR', {
+      style: 'currency',
+      currency: 'USD'
+    }).format(amount);
+  }
 </script>
 
 <svelte:head>
-  <title>바카라 게임 규칙 및 전략 - LuckyMesh Casino</title>
-  <meta name="description" content="바카라의 모든 규칙과 베팅 전략을 알아보세요. 플레이어, 뱅커, 타이 베팅의 차이점과 최적의 플레이 방법을 제공합니다." />
+  <title>바카라 게임 - LuckyMesh Casino</title>
+  <meta name="description" content="실시간 바카라 게임을 플레이하세요. 플레이어, 뱅커, 타이 베팅과 사이드 베팅으로 더 큰 재미를 경험해보세요." />
 </svelte:head>
 
-<!-- 페이지 헤더 -->
-<section class="bg-gradient-to-r from-casino-dark to-black py-16">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="text-center">
-      <div class="text-6xl mb-4">♠️</div>
-      <h1 class="text-4xl md:text-5xl font-bold text-casino-gold mb-4">바카라 (Baccarat)</h1>
-      <p class="text-xl text-gray-300 max-w-3xl mx-auto">
-        우아함의 상징인 바카라, 간단한 룰과 높은 환원율로 전 세계 카지노에서 사랑받는 게임입니다.
-        플레이어와 뱅커 중 9에 가까운 쪽을 선택하는 것이 전부입니다.
-      </p>
-    </div>
-  </div>
-</section>
+<div class="min-h-screen bg-gradient-to-br from-pastel-mint via-pastel-cream to-pastel-sky">
+  <!-- 게임 헤더 -->
+  <div class="bg-gradient-to-r from-primary-soft-mint to-primary-soft-peach py-8">
+    <div class="max-w-6xl mx-auto px-4">
+      <div class="flex justify-between items-center text-white">
+        <div class="flex items-center space-x-4">
+          <div class="text-4xl">🎴</div>
+          <div>
+            <h1 class="text-3xl font-bold font-playfair">바카라</h1>
+            <p class="text-sm opacity-90">Baccarat Game</p>
+          </div>
+        </div>
 
-<!-- 게임 개요 -->
-<section class="py-16 bg-casino-dark">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-      <div>
-        <h2 class="text-3xl font-bold text-casino-gold mb-6">게임 개요</h2>
-        <p class="text-gray-300 text-lg leading-relaxed mb-6">
-          {baccarat.description}
-        </p>
-        <div class="bg-black/50 rounded-xl p-6 border border-casino-gold/20">
-          <h3 class="text-xl font-semibold text-casino-gold mb-4">게임 목표</h3>
-          <p class="text-gray-300">{baccarat.rules.objective}</p>
-        </div>
-      </div>
+        <div class="flex items-center space-x-6">
+          <div class="text-center">
+            <div class="text-2xl font-bold">{formatCurrency(gameState.balance)}</div>
+            <div class="text-sm opacity-90">잔고</div>
+          </div>
 
-      <div class="grid grid-cols-2 gap-4">
-        <div class="bg-gradient-to-br from-casino-gold/20 to-yellow-900/20 rounded-xl p-6 text-center">
-          <div class="text-2xl text-casino-gold font-bold">{baccarat.minBet} - {baccarat.maxBet}</div>
-          <div class="text-gray-300 text-sm">베팅 범위</div>
-        </div>
-        <div class="bg-gradient-to-br from-casino-green/20 to-green-900/20 rounded-xl p-6 text-center">
-          <div class="text-2xl text-casino-green font-bold">{baccarat.rtp}</div>
-          <div class="text-gray-300 text-sm">환원율 (RTP)</div>
-        </div>
-        <div class="bg-gradient-to-br from-casino-red/20 to-red-900/20 rounded-xl p-6 text-center">
-          <div class="text-2xl text-casino-red font-bold">{baccarat.houseEdge}</div>
-          <div class="text-gray-300 text-sm">하우스 엣지</div>
-        </div>
-        <div class="bg-gradient-to-br from-purple-600/20 to-purple-900/20 rounded-xl p-6 text-center">
-          <div class="text-2xl text-purple-400 font-bold">8덱</div>
-          <div class="text-gray-300 text-sm">표준 덱 수</div>
+          <button
+            on:click={() => showRules = !showRules}
+            class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition-all"
+          >
+            게임 규칙
+          </button>
         </div>
       </div>
     </div>
   </div>
-</section>
 
-<!-- 카드 값 -->
-<section class="py-16 bg-black">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <h2 class="text-3xl font-bold text-casino-gold text-center mb-12">카드 값</h2>
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-      {#each Object.entries(baccarat.rules.cardValues) as [card, value]}
-        <div class="bg-gradient-to-br from-gray-900 to-black rounded-xl p-8 text-center border border-casino-gold/20">
-          <div class="text-4xl mb-4">
-            {#if card === 'A'}🂡
-            {:else if card === '2-9'}🃏
-            {:else if card === '10, J, Q, K'}🂮
+  <!-- 게임 메인 영역 -->
+  <div class="max-w-6xl mx-auto px-4 py-8">
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+
+      <!-- 게임 테이블 -->
+      <div class="lg:col-span-3">
+        <PastelCard gradient={true} gradientFrom="pastel-cream" gradientTo="pastel-mint" padding="p-6">
+          <!-- 게임 상태 메시지 -->
+          <div class="text-center mb-6">
+            <div class="bg-gradient-to-r from-primary-soft-purple to-primary-soft-pink text-white px-6 py-3 rounded-full inline-block">
+              <span class="font-bold">{gameState.message}</span>
+            </div>
+          </div>
+
+          <!-- 카드 영역 -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+            <!-- 플레이어 영역 -->
+            <div class="text-center">
+              <div class="bg-gradient-to-r from-blue-500 to-blue-600 text-white py-3 px-6 rounded-lg mb-4 font-bold">
+                플레이어 {gameState.sideBets.playerPair ? '(페어!)' : ''}
+              </div>
+
+              <div class="flex justify-center space-x-2 mb-4 min-h-[120px] items-end">
+                {#each gameState.playerHand as card, index}
+                  <div class="animate-in" style="animation-delay: {index * 200}ms;">
+                    <PlayingCard suit={card.suit} value={card.value} size="normal" />
+                  </div>
+                {/each}
+              </div>
+
+              <div class="text-3xl font-bold text-blue-600 mb-2">{gameState.playerScore}</div>
+              {#if gameState.winner === 'player'}
+                <div class="text-green-600 font-bold text-lg">🏆 승리!</div>
+              {/if}
+            </div>
+
+            <!-- 뱅커 영역 -->
+            <div class="text-center">
+              <div class="bg-gradient-to-r from-red-500 to-red-600 text-white py-3 px-6 rounded-lg mb-4 font-bold">
+                뱅커 {gameState.sideBets.bankerPair ? '(페어!)' : ''}
+              </div>
+
+              <div class="flex justify-center space-x-2 mb-4 min-h-[120px] items-end">
+                {#each gameState.bankerHand as card, index}
+                  <div class="animate-in" style="animation-delay: {(index + 2) * 200}ms;">
+                    <PlayingCard suit={card.suit} value={card.value} size="normal" />
+                  </div>
+                {/each}
+              </div>
+
+              <div class="text-3xl font-bold text-red-600 mb-2">{gameState.bankerScore}</div>
+              {#if gameState.winner === 'banker'}
+                <div class="text-green-600 font-bold text-lg">🏆 승리!</div>
+              {/if}
+            </div>
+          </div>
+
+          <!-- 타이 결과 -->
+          {#if gameState.winner === 'tie'}
+            <div class="text-center mb-6">
+              <div class="bg-gradient-to-r from-green-500 to-green-600 text-white py-3 px-6 rounded-lg inline-block font-bold text-lg">
+                🤝 무승부!
+              </div>
+            </div>
+          {/if}
+
+          <!-- 베팅 영역 -->
+          <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+            {#each betTypes as betType}
+              <button
+                on:click={() => placeBet(betType.key)}
+                disabled={gameState.gameState !== 'betting' || gameState.balance < selectedBetAmount}
+                class="bg-gradient-to-r {betType.color} text-white p-4 rounded-lg font-bold transition-all hover:scale-105 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed relative"
+              >
+                <div class="text-sm mb-1">{betType.label}</div>
+                <div class="text-xs opacity-90">{betType.payout}</div>
+
+                {#if gameState.bets[betType.key] > 0}
+                  <div class="absolute -top-2 -right-2 bg-yellow-500 text-black rounded-full w-6 h-6 text-xs flex items-center justify-center font-bold">
+                    {formatCurrency(gameState.bets[betType.key])}
+                  </div>
+                {/if}
+              </button>
+            {/each}
+          </div>
+
+          <!-- 게임 컨트롤 -->
+          <div class="flex flex-wrap justify-center gap-4">
+            {#if gameState.gameState === 'betting'}
+              <PastelButton
+                variant="primary"
+                on:click={baccaratActions.deal}
+                disabled={Object.values(gameState.bets).reduce((sum, bet) => sum + bet, 0) === 0}
+              >
+                딜 시작
+              </PastelButton>
+
+              <PastelButton
+                variant="secondary"
+                on:click={baccaratActions.clearBets}
+                disabled={Object.values(gameState.bets).reduce((sum, bet) => sum + bet, 0) === 0}
+              >
+                베팅 취소
+              </PastelButton>
+            {:else if gameState.gameState === 'finished'}
+              <PastelButton
+                variant="primary"
+                on:click={baccaratActions.newGame}
+              >
+                새 게임
+              </PastelButton>
             {/if}
           </div>
-          <div class="text-xl font-bold text-casino-gold mb-2">{card}</div>
-          <div class="text-gray-300">{value}</div>
-        </div>
-      {/each}
-    </div>
-
-    <div class="max-w-4xl mx-auto mt-12">
-      <div class="bg-gradient-to-br from-casino-gold/10 to-yellow-900/10 rounded-xl p-6 border border-casino-gold/30">
-        <h3 class="text-xl font-semibold text-casino-gold mb-4 text-center">점수 계산 방법</h3>
-        <p class="text-gray-300 text-center">
-          두 카드의 합에서 <span class="text-casino-gold font-semibold">일의 자리 숫자만</span> 해당 패의 값이 됩니다.<br>
-          예: 7 + 6 = 13 → <span class="text-casino-gold font-semibold">3점</span> | 9 + 5 = 14 → <span class="text-casino-gold font-semibold">4점</span>
-        </p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- 게임 진행 -->
-<section class="py-16 bg-casino-dark">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <h2 class="text-3xl font-bold text-casino-gold text-center mb-12">게임 진행</h2>
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
-      <div>
-        <h3 class="text-2xl font-semibold text-casino-gold mb-6">기본 규칙</h3>
-        <div class="space-y-4">
-          {#each baccarat.rules.basicRules as rule, index}
-            <div class="flex items-start space-x-4 bg-black/30 rounded-lg p-4">
-              <div class="bg-casino-gold text-black rounded-full w-8 h-8 flex items-center justify-center font-bold text-sm flex-shrink-0">
-                {index + 1}
-              </div>
-              <p class="text-gray-300">{rule}</p>
-            </div>
-          {/each}
-        </div>
+        </PastelCard>
       </div>
 
-      <div>
-        <h3 class="text-2xl font-semibold text-casino-gold mb-6">내추럴 (Natural)</h3>
-        <div class="bg-black/30 rounded-lg p-6 mb-6">
-          <p class="text-gray-300 mb-4">
-            처음 2장의 카드 합이 8 또는 9가 나오면 <span class="text-casino-gold font-semibold">'내추럴'</span>이라고 하며,
-            즉시 게임이 종료됩니다.
-          </p>
-          <div class="grid grid-cols-2 gap-4">
-            <div class="text-center">
-              <div class="text-2xl text-casino-gold font-bold mb-1">8</div>
-              <div class="text-gray-400 text-sm">내추럴 8</div>
-            </div>
-            <div class="text-center">
-              <div class="text-2xl text-casino-gold font-bold mb-1">9</div>
-              <div class="text-gray-400 text-sm">내추럴 9</div>
-            </div>
+      <!-- 사이드바 -->
+      <div class="space-y-6">
+        <!-- 베팅 금액 선택 -->
+        <PastelCard>
+          <h3 class="font-bold text-lg mb-4 text-center">베팅 금액</h3>
+          <div class="grid grid-cols-2 gap-2">
+            {#each betOptions as amount}
+              <button
+                on:click={() => selectedBetAmount = amount}
+                class="p-2 rounded-lg border-2 transition-all font-bold {selectedBetAmount === amount ? 'border-primary-soft-pink bg-primary-soft-pink text-white' : 'border-gray-300 hover:border-primary-soft-pink'}"
+              >
+                {formatCurrency(amount)}
+              </button>
+            {/each}
           </div>
-        </div>
+        </PastelCard>
 
-        <div class="bg-gradient-to-br from-casino-green/10 to-green-900/10 rounded-xl p-6 border border-casino-green/30">
-          <h4 class="text-casino-green font-semibold mb-3">승리 조건</h4>
-          <ul class="text-gray-300 space-y-2 text-sm">
-            <li>• 9에 가까운 값을 가진 쪽이 승리</li>
-            <li>• 동점인 경우 타이(무승부)</li>
-            <li>• 내추럴 9가 가장 강함</li>
-            <li>• 내추럴 8은 일반 9를 이김</li>
-          </ul>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- 3번째 카드 규칙 -->
-<section class="py-16 bg-black">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <h2 class="text-3xl font-bold text-casino-gold text-center mb-12">3번째 카드 규칙</h2>
-
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
-      <!-- 플레이어 규칙 -->
-      <div>
-        <h3 class="text-2xl font-semibold text-casino-gold mb-6">플레이어 규칙</h3>
-        <div class="space-y-4">
-          {#each thirdCardRules as rule}
-            <div class="bg-gradient-to-r from-blue-900/30 to-blue-800/30 rounded-lg p-4 border border-blue-500/30">
-              <div class="flex justify-between items-center">
-                <span class="text-blue-300 font-semibold">처음 2장 합계: {rule.player}</span>
-                <span class="text-gray-300">{rule.action}</span>
-              </div>
-            </div>
-          {/each}
-        </div>
-      </div>
-
-      <!-- 뱅커 규칙 -->
-      <div>
-        <h3 class="text-2xl font-semibold text-casino-gold mb-6">뱅커 규칙</h3>
-        <div class="space-y-4">
-          {#each bankerRules as rule}
-            <div class="bg-gradient-to-r from-red-900/30 to-red-800/30 rounded-lg p-4 border border-red-500/30">
-              <div class="text-red-300 font-semibold mb-2">뱅커 합계: {rule.banker}</div>
-              <div class="text-gray-300 text-sm">{rule.condition}</div>
-            </div>
-          {/each}
-        </div>
-      </div>
-    </div>
-
-    <div class="max-w-4xl mx-auto mt-12">
-      <div class="bg-gradient-to-br from-casino-gold/10 to-yellow-900/10 rounded-xl p-6 border border-casino-gold/30">
-        <h3 class="text-xl font-semibold text-casino-gold mb-4 text-center">중요 포인트</h3>
-        <p class="text-gray-300 text-center">
-          3번째 카드 규칙은 <span class="text-casino-gold font-semibold">자동으로 적용</span>되므로 플레이어가 별도로 선택할 필요가 없습니다.<br>
-          딜러가 모든 규칙에 따라 카드를 배분합니다.
-        </p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- 베팅 종류 -->
-<section class="py-16 bg-casino-dark">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <h2 class="text-3xl font-bold text-casino-gold text-center mb-12">베팅 종류 및 배당률</h2>
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {#each bettingTypes as bet}
-        <div class="bg-gradient-to-br from-gray-900 to-black rounded-xl p-6 border border-casino-gold/20">
-          <h3 class="text-xl font-bold text-casino-gold mb-3">{bet.name}</h3>
-          <p class="text-gray-300 text-sm mb-4">{bet.description}</p>
+        <!-- 게임 통계 -->
+        <PastelCard>
+          <h3 class="font-bold text-lg mb-4 text-center">게임 기록</h3>
           <div class="space-y-2">
-            <div class="flex justify-between">
-              <span class="text-gray-400">배당률:</span>
-              <span class="text-casino-green font-bold">{bet.payout}</span>
-            </div>
-            <div class="flex justify-between">
-              <span class="text-gray-400">수수료:</span>
-              <span class="text-gray-300">{bet.commission}</span>
-            </div>
+            {#each gameState.history.slice(0, 10) as game, index}
+              <div class="flex justify-between items-center text-sm py-1 border-b border-gray-200">
+                <span class="text-gray-600">#{gameState.history.length - index}</span>
+                <div class="flex space-x-1">
+                  <span class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold {
+                    game.winner === 'player' ? 'bg-blue-500 text-white' :
+                    game.winner === 'banker' ? 'bg-red-500 text-white' :
+                    'bg-green-500 text-white'
+                  }">
+                    {game.winner === 'player' ? 'P' : game.winner === 'banker' ? 'B' : 'T'}
+                  </span>
+                  {#if game.sideBets.playerPair}<span class="text-blue-500">🎯</span>{/if}
+                  {#if game.sideBets.bankerPair}<span class="text-red-500">🎯</span>{/if}
+                </div>
+              </div>
+            {/each}
           </div>
-        </div>
-      {/each}
+        </PastelCard>
+
+        <!-- 베팅 요약 -->
+        {#if Object.values(gameState.bets).reduce((sum, bet) => sum + bet, 0) > 0}
+          <PastelCard>
+            <h3 class="font-bold text-lg mb-4 text-center">현재 베팅</h3>
+            <div class="space-y-2">
+              {#each betTypes as betType}
+                {#if gameState.bets[betType.key] > 0}
+                  <div class="flex justify-between">
+                    <span>{betType.label}</span>
+                    <span class="font-bold">{formatCurrency(gameState.bets[betType.key])}</span>
+                  </div>
+                {/if}
+              {/each}
+              <hr>
+              <div class="flex justify-between font-bold">
+                <span>총 베팅</span>
+                <span>{formatCurrency(Object.values(gameState.bets).reduce((sum, bet) => sum + bet, 0))}</span>
+              </div>
+            </div>
+          </PastelCard>
+        {/if}
+      </div>
     </div>
   </div>
-</section>
 
-<!-- 전략 및 팁 -->
-<section class="py-16 bg-black">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <h2 class="text-3xl font-bold text-casino-gold text-center mb-12">베팅 전략</h2>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-      {#each strategies as strategy}
-        <div class="bg-gradient-to-br from-gray-900 to-black rounded-xl p-6 border border-casino-gold/20">
-          <div class="flex items-center space-x-4 mb-4">
-            <div class="text-3xl">{strategy.icon}</div>
-            <h3 class="text-xl font-bold text-casino-gold">{strategy.title}</h3>
-          </div>
-          <p class="text-gray-300">{strategy.description}</p>
+  <!-- 게임 규칙 모달 -->
+  {#if showRules}
+    <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" on:click={() => showRules = false}>
+      <div class="bg-white rounded-xl p-6 max-w-2xl max-h-[80vh] overflow-y-auto" on:click|stopPropagation>
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-2xl font-bold">바카라 게임 규칙</h2>
+          <button on:click={() => showRules = false} class="text-gray-500 hover:text-gray-700">✕</button>
         </div>
-      {/each}
-    </div>
 
-    <div class="max-w-4xl mx-auto mt-12">
-      <div class="bg-gradient-to-br from-casino-red/10 to-red-900/10 rounded-xl p-8 border border-casino-red/30">
-        <h3 class="text-2xl font-bold text-casino-red mb-6 text-center">하우스 엣지 비교</h3>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div class="text-center">
-            <div class="text-3xl font-bold text-casino-green mb-2">1.06%</div>
-            <div class="text-casino-green font-semibold mb-1">뱅커 베팅</div>
-            <div class="text-gray-400 text-sm">가장 유리한 베팅</div>
+        <div class="space-y-4 text-sm">
+          <div>
+            <h3 class="font-bold mb-2">게임 목표</h3>
+            <p>플레이어와 뱅커 중 어느 쪽이 9에 더 가까운 점수를 얻을지 예측하는 게임입니다.</p>
           </div>
-          <div class="text-center">
-            <div class="text-3xl font-bold text-casino-gold mb-2">1.24%</div>
-            <div class="text-casino-gold font-semibold mb-1">플레이어 베팅</div>
-            <div class="text-gray-400 text-sm">두 번째로 유리</div>
+
+          <div>
+            <h3 class="font-bold mb-2">카드 값</h3>
+            <ul class="list-disc list-inside space-y-1">
+              <li>A = 1점</li>
+              <li>2~9 = 숫자 그대로</li>
+              <li>10, J, Q, K = 0점</li>
+            </ul>
+            <p class="mt-2 text-gray-600">두 카드의 합에서 일의 자리만 계산합니다. (예: 7+6=13 → 3점)</p>
           </div>
-          <div class="text-center">
-            <div class="text-3xl font-bold text-casino-red mb-2">14.4%</div>
-            <div class="text-casino-red font-semibold mb-1">타이 베팅</div>
-            <div class="text-gray-400 text-sm">권장하지 않음</div>
+
+          <div>
+            <h3 class="font-bold mb-2">베팅 종류</h3>
+            <ul class="space-y-1">
+              <li><strong>플레이어:</strong> 1:1 배당</li>
+              <li><strong>뱅커:</strong> 1:1 배당 (5% 수수료)</li>
+              <li><strong>타이:</strong> 8:1 배당</li>
+              <li><strong>페어 베팅:</strong> 11:1 배당</li>
+            </ul>
+          </div>
+
+          <div>
+            <h3 class="font-bold mb-2">3번째 카드 규칙</h3>
+            <p>처음 2장의 합이 8 또는 9면 즉시 게임 종료 (내추럴). 그 외의 경우 자동으로 3번째 카드 규칙이 적용됩니다.</p>
           </div>
         </div>
       </div>
     </div>
-  </div>
-</section>
-
-<!-- CTA 섹션 -->
-<section class="py-16 bg-gradient-to-r from-casino-gold via-yellow-600 to-casino-gold text-black">
-  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-    <h2 class="text-4xl font-bold mb-4">바카라 게임 시작하기</h2>
-    <p class="text-xl mb-8 text-black/80">
-      간단한 규칙과 높은 환원율의 바카라에서 우아한 게임을 즐겨보세요!
-    </p>
-    <div class="flex flex-col sm:flex-row gap-4 justify-center">
-      <button class="bg-black text-casino-gold font-bold py-4 px-8 rounded-lg hover:bg-gray-900 transition-colors duration-200 text-lg">
-        바카라 플레이하기
-      </button>
-      <a href="/" class="bg-transparent border-2 border-black text-black font-bold py-4 px-8 rounded-lg hover:bg-black hover:text-casino-gold transition-all duration-200 text-lg">
-        다른 게임 보기
-      </a>
-    </div>
-  </div>
-</section>
+  {/if}
+</div>
