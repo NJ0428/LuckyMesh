@@ -44,7 +44,7 @@
   <!-- 게임 헤더 -->
   <div class="bg-gradient-to-r from-primary-soft-mint to-primary-soft-peach py-8">
     <div class="max-w-6xl mx-auto px-4">
-      <div class="flex justify-between items-center text-white">
+      <div class="flex justify-between items-center text-black">
         <div class="flex items-center space-x-4">
           <div class="text-4xl">🎡</div>
           <div>
@@ -61,7 +61,7 @@
 
           <button
             on:click={() => showRules = !showRules}
-            class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition-all"
+            class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition-all text-black"
           >
             게임 규칙
           </button>
@@ -72,14 +72,14 @@
 
   <!-- 게임 메인 영역 -->
   <div class="max-w-7xl mx-auto px-4 py-8">
-    <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
       <!-- 룰렛 휠 -->
-      <div class="xl:col-span-1">
+      <div>
         <PastelCard gradient={true} gradientFrom="pastel-cream" gradientTo="pastel-mint" padding="p-6">
           <!-- 게임 상태 메시지 -->
           <div class="text-center mb-6">
-            <div class="bg-gradient-to-r from-primary-soft-purple to-primary-soft-pink text-white px-6 py-3 rounded-full inline-block">
+            <div class="bg-gradient-to-r from-primary-soft-purple to-primary-soft-pink text-black px-6 py-3 rounded-full inline-block">
               <span class="font-bold">{gameState.message}</span>
             </div>
           </div>
@@ -98,7 +98,7 @@
             <div class="text-center mb-6">
               <div class="inline-flex items-center space-x-3 bg-white/20 rounded-lg px-4 py-2">
                 <span class="text-lg font-semibold">당첨 번호:</span>
-                <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-white
+                <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-black
                   {numberColors[gameState.winningNumber] === 'red' ? 'bg-red-500' :
                    numberColors[gameState.winningNumber] === 'black' ? 'bg-gray-800' : 'bg-green-500'}">
                   {gameState.winningNumber}
@@ -141,11 +141,11 @@
       </div>
 
       <!-- 베팅 테이블 -->
-      <div class="xl:col-span-2">
+      <div>
         <PastelCard padding="p-6">
-          <h3 class="text-xl font-bold mb-4 text-center">베팅 테이블</h3>
+          <h3 class="text-xl font-bold mb-4 text-center text-black">베팅 테이블</h3>
           <RouletteBettingTable
-            {gameState}
+            gameState={gameState.gameState}
             bets={gameState.bets}
             {selectedBetAmount}
           />
@@ -158,12 +158,12 @@
 
       <!-- 베팅 금액 선택 -->
       <PastelCard>
-        <h3 class="font-bold text-lg mb-4 text-center">베팅 금액</h3>
+        <h3 class="font-bold text-lg mb-4 text-center text-black">베팅 금액</h3>
         <div class="grid grid-cols-2 gap-2">
           {#each betOptions as amount}
             <button
               on:click={() => selectedBetAmount = amount}
-              class="p-2 rounded-lg border-2 transition-all font-bold {selectedBetAmount === amount ? 'border-primary-soft-pink bg-primary-soft-pink text-white' : 'border-gray-300 hover:border-primary-soft-pink'}"
+              class="p-2 rounded-lg border-2 transition-all font-bold {selectedBetAmount === amount ? 'border-primary-soft-pink bg-primary-soft-pink text-black' : 'border-gray-300 hover:border-primary-soft-pink text-black'}"
             >
               {formatCurrency(amount)}
             </button>
@@ -174,8 +174,8 @@
       <!-- 현재 베팅 요약 -->
       {#if getTotalBets() > 0}
         <PastelCard>
-          <h3 class="font-bold text-lg mb-4 text-center">현재 베팅</h3>
-          <div class="space-y-2 max-h-32 overflow-y-auto">
+          <h3 class="font-bold text-lg mb-4 text-center text-black">현재 베팅</h3>
+          <div class="space-y-2 max-h-32 overflow-y-auto text-black">
             {#each Object.entries(gameState.bets) as [betKey, bet]}
               <div class="flex justify-between items-center text-sm">
                 <span class="flex-1 truncate">
@@ -208,12 +208,12 @@
 
       <!-- 게임 기록 -->
       <PastelCard>
-        <h3 class="font-bold text-lg mb-4 text-center">최근 결과</h3>
-        <div class="space-y-2">
+        <h3 class="font-bold text-lg mb-4 text-center text-black">최근 결과</h3>
+        <div class="space-y-2 text-black">
           {#each gameState.history.slice(0, 10) as game, index}
             <div class="flex justify-between items-center text-sm py-1 border-b border-gray-200">
               <div class="flex items-center space-x-2">
-                <div class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white
+                <div class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-black
                   {game.winningColor === 'red' ? 'bg-red-500' :
                    game.winningColor === 'black' ? 'bg-gray-800' : 'bg-green-500'}">
                   {game.winningNumber}
@@ -233,7 +233,7 @@
   <!-- 게임 규칙 모달 -->
   {#if showRules}
     <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" on:click={() => showRules = false}>
-      <div class="bg-white rounded-xl p-6 max-w-3xl max-h-[80vh] overflow-y-auto" on:click|stopPropagation>
+      <div class="bg-white rounded-xl p-6 max-w-3xl max-h-[80vh] overflow-y-auto text-black" on:click|stopPropagation>
         <div class="flex justify-between items-center mb-4">
           <h2 class="text-2xl font-bold">룰렛 게임 규칙</h2>
           <button on:click={() => showRules = false} class="text-gray-500 hover:text-gray-700">✕</button>

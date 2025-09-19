@@ -43,7 +43,7 @@
   <!-- 게임 헤더 -->
   <div class="bg-gradient-to-r from-primary-soft-mint to-primary-soft-peach py-8">
     <div class="max-w-6xl mx-auto px-4">
-      <div class="flex justify-between items-center text-white">
+      <div class="flex justify-between items-center text-black">
         <div class="flex items-center space-x-4">
           <div class="text-4xl">🎴</div>
           <div>
@@ -60,7 +60,7 @@
 
           <button
             on:click={() => showRules = !showRules}
-            class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition-all"
+            class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition-all text-black"
           >
             게임 규칙
           </button>
@@ -78,7 +78,7 @@
         <PastelCard gradient={true} gradientFrom="pastel-cream" gradientTo="pastel-mint" padding="p-6">
           <!-- 게임 상태 메시지 -->
           <div class="text-center mb-6">
-            <div class="bg-gradient-to-r from-primary-soft-purple to-primary-soft-pink text-white px-6 py-3 rounded-full inline-block">
+            <div class="bg-gradient-to-r from-primary-soft-purple to-primary-soft-pink text-black px-6 py-3 rounded-full inline-block">
               <span class="font-bold">{gameState.message}</span>
             </div>
           </div>
@@ -87,7 +87,7 @@
           <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
             <!-- 플레이어 영역 -->
             <div class="text-center">
-              <div class="bg-gradient-to-r from-blue-500 to-blue-600 text-white py-3 px-6 rounded-lg mb-4 font-bold">
+              <div class="bg-gradient-to-r from-blue-500 to-blue-600 text-black py-3 px-6 rounded-lg mb-4 font-bold">
                 플레이어 {gameState.sideBets.playerPair ? '(페어!)' : ''}
               </div>
 
@@ -107,7 +107,7 @@
 
             <!-- 뱅커 영역 -->
             <div class="text-center">
-              <div class="bg-gradient-to-r from-red-500 to-red-600 text-white py-3 px-6 rounded-lg mb-4 font-bold">
+              <div class="bg-gradient-to-r from-red-500 to-red-600 text-black py-3 px-6 rounded-lg mb-4 font-bold">
                 뱅커 {gameState.sideBets.bankerPair ? '(페어!)' : ''}
               </div>
 
@@ -129,7 +129,7 @@
           <!-- 타이 결과 -->
           {#if gameState.winner === 'tie'}
             <div class="text-center mb-6">
-              <div class="bg-gradient-to-r from-green-500 to-green-600 text-white py-3 px-6 rounded-lg inline-block font-bold text-lg">
+              <div class="bg-gradient-to-r from-green-500 to-green-600 text-black py-3 px-6 rounded-lg inline-block font-bold text-lg">
                 🤝 무승부!
               </div>
             </div>
@@ -141,7 +141,7 @@
               <button
                 on:click={() => placeBet(betType.key)}
                 disabled={gameState.gameState !== 'betting' || gameState.balance < selectedBetAmount}
-                class="bg-gradient-to-r {betType.color} text-white p-4 rounded-lg font-bold transition-all hover:scale-105 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed relative"
+                class="bg-gradient-to-r {betType.color} text-black p-4 rounded-lg font-bold transition-all hover:scale-105 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed relative"
               >
                 <div class="text-sm mb-1">{betType.label}</div>
                 <div class="text-xs opacity-90">{betType.payout}</div>
@@ -189,12 +189,12 @@
       <div class="space-y-6">
         <!-- 베팅 금액 선택 -->
         <PastelCard>
-          <h3 class="font-bold text-lg mb-4 text-center">베팅 금액</h3>
+          <h3 class="font-bold text-lg mb-4 text-center text-black">베팅 금액</h3>
           <div class="grid grid-cols-2 gap-2">
             {#each betOptions as amount}
               <button
                 on:click={() => selectedBetAmount = amount}
-                class="p-2 rounded-lg border-2 transition-all font-bold {selectedBetAmount === amount ? 'border-primary-soft-pink bg-primary-soft-pink text-white' : 'border-gray-300 hover:border-primary-soft-pink'}"
+                class="p-2 rounded-lg border-2 transition-all font-bold {selectedBetAmount === amount ? 'border-primary-soft-pink bg-primary-soft-pink text-white' : 'border-gray-300 hover:border-primary-soft-pink text-black'}"
               >
                 {formatCurrency(amount)}
               </button>
@@ -204,8 +204,8 @@
 
         <!-- 게임 통계 -->
         <PastelCard>
-          <h3 class="font-bold text-lg mb-4 text-center">게임 기록</h3>
-          <div class="space-y-2">
+          <h3 class="font-bold text-lg mb-4 text-center text-black">게임 기록</h3>
+          <div class="space-y-2 text-black">
             {#each gameState.history.slice(0, 10) as game, index}
               <div class="flex justify-between items-center text-sm py-1 border-b border-gray-200">
                 <span class="text-gray-600">#{gameState.history.length - index}</span>
@@ -228,8 +228,8 @@
         <!-- 베팅 요약 -->
         {#if Object.values(gameState.bets).reduce((sum, bet) => sum + bet, 0) > 0}
           <PastelCard>
-            <h3 class="font-bold text-lg mb-4 text-center">현재 베팅</h3>
-            <div class="space-y-2">
+            <h3 class="font-bold text-lg mb-4 text-center text-black">현재 베팅</h3>
+            <div class="space-y-2 text-black">
               {#each betTypes as betType}
                 {#if gameState.bets[betType.key] > 0}
                   <div class="flex justify-between">
@@ -253,7 +253,7 @@
   <!-- 게임 규칙 모달 -->
   {#if showRules}
     <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" on:click={() => showRules = false}>
-      <div class="bg-white rounded-xl p-6 max-w-2xl max-h-[80vh] overflow-y-auto" on:click|stopPropagation>
+      <div class="bg-white rounded-xl p-6 max-w-2xl max-h-[80vh] overflow-y-auto text-black" on:click|stopPropagation>
         <div class="flex justify-between items-center mb-4">
           <h2 class="text-2xl font-bold">바카라 게임 규칙</h2>
           <button on:click={() => showRules = false} class="text-gray-500 hover:text-gray-700">✕</button>
