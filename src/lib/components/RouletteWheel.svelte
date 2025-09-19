@@ -8,20 +8,20 @@
 
   $: sizeClasses = {
     small: 'w-48 h-48',
-    normal: 'w-80 h-80',
-    large: 'w-96 h-96'
+    normal: 'w-[500px] h-[500px]',
+    large: 'w-[600px] h-[600px]'
   }[size];
 
   $: numberSize = {
     small: 'text-xs',
-    normal: 'text-sm',
-    large: 'text-base'
+    normal: 'text-lg',
+    large: 'text-xl'
   }[size];
 
   // 각 번호의 위치 계산 (원형 배치)
   function getNumberPosition(index, total) {
     const angle = (index * 360) / total - 90; // -90도로 12시 방향부터 시작
-    const radius = size === 'small' ? 85 : size === 'normal' ? 140 : 170;
+    const radius = size === 'small' ? 85 : size === 'normal' ? 220 : 270;
     const x = Math.cos(angle * Math.PI / 180) * radius;
     const y = Math.sin(angle * Math.PI / 180) * radius;
     return { x, y, angle };
@@ -60,7 +60,7 @@
     {#each rouletteNumbers as numberObj, index}
       {@const position = getNumberPosition(index, rouletteNumbers.length)}
       <div
-        class="absolute flex items-center justify-center w-8 h-8 rounded-full border-2 border-white/30 {numberSize} font-bold text-white transition-transform ease-out"
+        class="absolute flex items-center justify-center w-12 h-12 rounded-full border-2 border-white/30 {numberSize} font-bold text-white transition-transform ease-out"
         class:duration-1000={!isSpinning}
         style="
           left: 50%;
@@ -75,13 +75,13 @@
   </div>
 
   <!-- 중앙 허브 -->
-  <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-16 h-16 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-600 border-4 border-yellow-300 flex items-center justify-center shadow-lg">
-    <div class="text-2xl">🎰</div>
+  <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-24 h-24 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-600 border-4 border-yellow-300 flex items-center justify-center shadow-lg">
+    <div class="text-4xl">🎰</div>
   </div>
 
   <!-- 포인터 (12시 방향) -->
   <div class="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-2 z-10">
-    <div class="w-0 h-0 border-l-4 border-r-4 border-b-8 border-l-transparent border-r-transparent border-b-yellow-400 drop-shadow-lg"></div>
+    <div class="w-0 h-0 border-l-6 border-r-6 border-b-12 border-l-transparent border-r-transparent border-b-yellow-400 drop-shadow-lg"></div>
   </div>
 </div>
 
