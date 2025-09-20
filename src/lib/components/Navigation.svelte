@@ -133,10 +133,10 @@
           </div>
         {:else}
           <!-- 비로그인 상태 -->
-          <button class="px-4 py-2 text-gray-700 hover:text-primary-soft-purple transition-colors font-poppins">로그인</button>
-          <button class="px-6 py-2 bg-gradient-to-r from-primary-soft-pink to-primary-soft-purple text-white rounded-full hover:shadow-lg transition-all hover:scale-105 font-poppins font-semibold">
+          <a href="/login" class="px-4 py-2 text-gray-700 hover:text-primary-soft-purple transition-colors font-poppins">로그인</a>
+          <a href="/signup" class="px-6 py-2 bg-gradient-to-r from-primary-soft-pink to-primary-soft-purple text-white rounded-full hover:shadow-lg transition-all hover:scale-105 font-poppins font-semibold">
             회원가입
-          </button>
+          </a>
         {/if}
       </div>
 
