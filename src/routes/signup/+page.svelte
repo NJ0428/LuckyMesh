@@ -140,8 +140,60 @@
   <meta name="description" content="LuckyMesh Casino에 가입하여 최고의 카지노 게임을 즐겨보세요. 신규 회원 특별 혜택을 놓치지 마세요!" />
 </svelte:head>
 
-<div class="min-h-screen bg-gradient-to-br from-casino-dark via-gray-900 to-black py-12 px-4 sm:px-6 lg:px-8">
-  <div class="max-w-2xl mx-auto">
+<div class="min-h-screen bg-gradient-to-br from-casino-dark via-gray-900 to-black">
+  <div class="flex min-h-screen">
+    <!-- 왼쪽 그림 영역 -->
+    <div class="hidden lg:flex lg:w-1/2 relative overflow-hidden">
+      <div class="absolute inset-0 bg-gradient-to-br from-casino-gold/20 via-purple-900/30 to-red-900/20"></div>
+      <div class="relative z-10 flex items-center justify-center w-full">
+        <div class="text-center space-y-8 p-12">
+          <!-- 회원가입 테마 아이콘들 -->
+          <div class="text-8xl mb-8 animate-bounce">🎁</div>
+          <h1 class="text-6xl font-bold text-casino-gold text-glow mb-6">
+            Welcome!
+          </h1>
+          <p class="text-2xl text-white font-light mb-8">
+            새로운 모험의 시작
+          </p>
+          <div class="text-xl text-gray-300 mb-8">
+            🌟 가입 즉시 50만원 보너스 🌟
+          </div>
+          <div class="flex justify-center space-x-8 text-5xl mb-8">
+            <span class="animate-pulse">💎</span>
+            <span class="animate-pulse delay-75">🏆</span>
+            <span class="animate-pulse delay-150">🎉</span>
+            <span class="animate-pulse delay-300">💰</span>
+          </div>
+          <div class="grid grid-cols-2 gap-4 mt-12 text-sm text-gray-300">
+            <div class="bg-black/30 p-4 rounded-lg backdrop-blur-sm">
+              <div class="text-3xl mb-2">🎮</div>
+              <div class="font-semibold">다양한 게임</div>
+            </div>
+            <div class="bg-black/30 p-4 rounded-lg backdrop-blur-sm">
+              <div class="text-3xl mb-2">🔒</div>
+              <div class="font-semibold">안전한 거래</div>
+            </div>
+            <div class="bg-black/30 p-4 rounded-lg backdrop-blur-sm">
+              <div class="text-3xl mb-2">🎯</div>
+              <div class="font-semibold">공정한 게임</div>
+            </div>
+            <div class="bg-black/30 p-4 rounded-lg backdrop-blur-sm">
+              <div class="text-3xl mb-2">⭐</div>
+              <div class="font-semibold">VIP 혜택</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- 부유하는 요소들 -->
+      <div class="absolute top-20 left-10 text-3xl animate-float">🎁</div>
+      <div class="absolute top-40 right-20 text-2xl animate-float-delay">💎</div>
+      <div class="absolute bottom-32 left-16 text-4xl animate-float-slow">🏆</div>
+      <div class="absolute bottom-20 right-12 text-3xl animate-float-delay-slow">🌟</div>
+    </div>
+
+    <!-- 오른쪽 폼 영역 -->
+    <div class="w-full lg:w-1/2 flex items-center justify-center p-4 sm:p-6 lg:p-8">
+      <div class="max-w-2xl w-full py-8">
     <!-- 로고 및 헤더 -->
     <div class="text-center mb-8">
       <a href="/" class="text-4xl font-bold text-casino-gold text-glow">
@@ -430,7 +482,42 @@
           <span class="mr-1">✅</span>
           <span>공정게임 인증</span>
         </div>
+        </div>
+        </div>
       </div>
     </div>
   </div>
 </div>
+
+<style>
+  @keyframes float {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-20px) rotate(5deg); }
+  }
+
+  @keyframes float-delay {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-15px) rotate(-3deg); }
+  }
+
+  @keyframes float-slow {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-25px) rotate(8deg); }
+  }
+
+  :global(.animate-float) {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  :global(.animate-float-delay) {
+    animation: float-delay 4s ease-in-out infinite;
+  }
+
+  :global(.animate-float-slow) {
+    animation: float-slow 5s ease-in-out infinite;
+  }
+
+  :global(.animate-float-delay-slow) {
+    animation: float-delay 6s ease-in-out infinite;
+  }
+</style>
