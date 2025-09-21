@@ -20,7 +20,7 @@ const createUserTable = db.prepare(`
     full_name TEXT NOT NULL,
     phone TEXT,
     date_of_birth DATE,
-    balance INTEGER DEFAULT 0,
+    balance INTEGER DEFAULT 10000,
     is_verified BOOLEAN DEFAULT FALSE,
     is_active BOOLEAN DEFAULT TRUE,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -58,12 +58,18 @@ createUserTable.run();
 createSessionTable.run();
 createGameHistoryTable.run();
 
+// 기존 사용자들의 잔액이 0인 경우 10000으로 업데이트
+const updateZeroBalances = db.prepare(`
+  UPDATE users SET balance = 10000 WHERE balance = 0
+`);
+updateZeroBalances.run();
+
 // 사용자 관련 쿼리들
 export const userQueries = {
   // 사용자 생성
   create: db.prepare(`
-    INSERT INTO users (username, email, password_hash, full_name, phone, date_of_birth)
-    VALUES (?, ?, ?, ?, ?, ?)
+    INSERT INTO users (username, email, password_hash, full_name, phone, date_of_birth, balance)
+    VALUES (?, ?, ?, ?, ?, ?, 10000)
   `),
 
   // 이메일로 사용자 찾기

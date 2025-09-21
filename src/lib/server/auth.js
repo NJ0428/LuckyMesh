@@ -38,7 +38,7 @@ export async function registerUser({ username, email, password, fullName, phone,
     // 비밀번호 해시
     const passwordHash = await hashPassword(password);
 
-    // 사용자 생성
+    // 사용자 생성 (기본 잔액 10000원 포함)
     const result = userQueries.create.run(
       username,
       email,
