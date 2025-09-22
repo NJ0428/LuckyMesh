@@ -3,8 +3,17 @@
   import { rouletteStore, rouletteActions, numberColors } from '$lib/stores/roulette.js';
   import RouletteWheel from '$lib/components/RouletteWheel.svelte';
   import RouletteBettingTable from '$lib/components/RouletteBettingTable.svelte';
+  import RouletteStatsDashboard from '$lib/components/RouletteStatsDashboard.svelte';
+  import BettingPatternAnalysis from '$lib/components/BettingPatternAnalysis.svelte';
+  import GameHistoryVisualization from '$lib/components/GameHistoryVisualization.svelte';
+  import StrategyGuide from '$lib/components/StrategyGuide.svelte';
   import PastelCard from '$lib/components/PastelCard.svelte';
   import PastelButton from '$lib/components/PastelButton.svelte';
+
+  let showStatsDashboard = false;
+  let showPatternAnalysis = false;
+  let showHistoryViz = false;
+  let showStrategyGuide = false;
 
   let gameState;
   let selectedBetAmount = 100;
@@ -90,6 +99,7 @@
               rotation={gameState.wheelRotation}
               isSpinning={gameState.isSpinning}
               spinDuration={gameState.spinDuration}
+              winningNumber={gameState.winningNumber}
             />
           </div>
 
@@ -152,6 +162,92 @@
         </PastelCard>
       </div>
     </div>
+
+    <!-- 기능 버튼들 -->
+    <div class="flex flex-wrap justify-center gap-4 mt-6 mb-6">
+      <PastelButton
+        size="sm"
+        variant={showStatsDashboard ? 'primary' : 'secondary'}
+        on:click={() => showStatsDashboard = !showStatsDashboard}
+      >
+        통계 대시보드
+      </PastelButton>
+
+      <PastelButton
+        size="sm"
+        variant={showPatternAnalysis ? 'primary' : 'secondary'}
+        on:click={() => showPatternAnalysis = !showPatternAnalysis}
+      >
+        베팅 패턴 분석
+      </PastelButton>
+
+      <PastelButton
+        size="sm"
+        variant={showHistoryViz ? 'primary' : 'secondary'}
+        on:click={() => showHistoryViz = !showHistoryViz}
+      >
+        게임 히스토리
+      </PastelButton>
+
+      <PastelButton
+        size="sm"
+        variant={showStrategyGuide ? 'primary' : 'secondary'}
+        on:click={() => showStrategyGuide = !showStrategyGuide}
+      >
+        전략 가이드
+      </PastelButton>
+    </div>
+
+    <!-- 실시간 통계 대시보드 -->
+    {#if showStatsDashboard}
+      <div class="mb-6">
+        <RouletteStatsDashboard
+          gameHistory={gameState.history}
+          currentBets={gameState.bets}
+          isVisible={showStatsDashboard}
+        />
+      </div>
+    {/if}
+
+    <!-- 베팅 패턴 분석 -->
+    {#if showPatternAnalysis}
+      <div class="mb-6">
+        <BettingPatternAnalysis
+          gameHistory={gameState.history}
+          currentBets={gameState.bets}
+          onSuggestionApply={(suggestion) => {
+            console.log('받은 제안:', suggestion);
+            // 여기에 제안 적용 로직 추가
+          }}
+        />
+      </div>
+    {/if}
+
+    <!-- 게임 히스토리 시각화 -->
+    {#if showHistoryViz}
+      <div class="mb-6">
+        <GameHistoryVisualization
+          gameHistory={gameState.history}
+          gameType="roulette"
+        />
+      </div>
+    {/if}
+
+    <!-- 전략 가이드 -->
+    {#if showStrategyGuide}
+      <div class="mb-6">
+        <StrategyGuide
+          gameType="roulette"
+          currentGameState={gameState}
+          userLevel="beginner"
+          isVisible={showStrategyGuide}
+          on:applyStrategy={(event) => {
+            console.log('전략 적용:', event.detail);
+            // 여기에 전략 적용 로직 추가
+          }}
+        />
+      </div>
+    {/if}
 
     <!-- 사이드바 정보 -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">

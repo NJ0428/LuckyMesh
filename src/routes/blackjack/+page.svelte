@@ -1,9 +1,12 @@
 <script>
   import { onMount } from 'svelte';
   import { blackjackStore, blackjackActions } from '$lib/stores/blackjack.js';
-  import PlayingCard from '$lib/components/PlayingCard.svelte';
+  import EnhancedPlayingCard from '$lib/components/EnhancedPlayingCard.svelte';
   import PastelCard from '$lib/components/PastelCard.svelte';
   import PastelButton from '$lib/components/PastelButton.svelte';
+
+  let dealingInProgress = false;
+  let cardAnimationDelay = 0;
 
   let gameState;
   let selectedBetAmount = 100;
@@ -119,14 +122,26 @@
 
             <div class="flex justify-center space-x-2 mb-4 min-h-[120px] items-end">
               {#each gameState.dealerHand as card, index}
-                <div class="animate-in" style="animation-delay: {index * 200}ms;">
-                  <!-- 첫 번째 카드는 게임이 끝나기 전까지 숨김 -->
-                  {#if index === 0 && gameState.gameState !== 'finished' && gameState.gameState !== 'dealer-turn'}
-                    <PlayingCard isHidden={true} size="normal" />
-                  {:else}
-                    <PlayingCard suit={card.suit} value={card.value} size="normal" />
-                  {/if}
-                </div>
+                <!-- 첫 번째 카드는 게임이 끝나기 전까지 숨김 -->
+                {#if index === 0 && gameState.gameState !== 'finished' && gameState.gameState !== 'dealer-turn'}
+                  <EnhancedPlayingCard
+                    isHidden={true}
+                    size="large"
+                    isDealing={dealingInProgress}
+                    dealDelay={index * 300}
+                    flipAnimation={true}
+                  />
+                {:else}
+                  <EnhancedPlayingCard
+                    suit={card.suit}
+                    rank={card.value}
+                    size="large"
+                    isDealing={dealingInProgress}
+                    dealDelay={index * 300}
+                    flipAnimation={index === 0 && (gameState.gameState === 'finished' || gameState.gameState === 'dealer-turn')}
+                    glowEffect={gameState.gameState === 'finished' && index === 0}
+                  />
+                {/if}
               {/each}
             </div>
           </div>
@@ -143,9 +158,16 @@
 
                 <div class="flex justify-center space-x-2 mb-4 min-h-[120px] items-end">
                   {#each hand as card, cardIndex}
-                    <div class="animate-in" style="animation-delay: {(cardIndex + 2) * 200}ms;">
-                      <PlayingCard suit={card.suit} value={card.value} size="normal" />
-                    </div>
+                    <EnhancedPlayingCard
+                      suit={card.suit}
+                      rank={card.value}
+                      size="large"
+                      isDealing={dealingInProgress}
+                      dealDelay={(cardIndex + gameState.dealerHand.length) * 300}
+                      isSelected={handIndex === gameState.currentHandIndex && gameState.gameState === 'playing'}
+                      isWinning={gameState.results[handIndex] === 'win' || gameState.results[handIndex] === 'blackjack'}
+                      glowEffect={getHandValue(hand) === 21}
+                    />
                   {/each}
                 </div>
 
