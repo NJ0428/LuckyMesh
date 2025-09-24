@@ -398,7 +398,7 @@
             <div class="text-xs text-gray-500">
               {userLevel === 'beginner' ? '초급' : userLevel === 'intermediate' ? '중급' : '고급'} 전략
             </div>
-            <PastelButton size="sm" variant="secondary" on:click|stopPropagation={() => applyStrategy(strategy)}>
+            <PastelButton size="sm" variant="secondary" on:click={(e) => { e.stopPropagation(); applyStrategy(strategy); }}>
               적용
             </PastelButton>
           </div>
@@ -410,7 +410,7 @@
   <!-- 전략 상세 모달 -->
   {#if selectedStrategy}
     <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" on:click={() => selectedStrategy = null}>
-      <div class="bg-white rounded-xl p-6 max-w-2xl max-h-[80vh] overflow-y-auto" on:click|stopPropagation>
+      <div class="bg-white rounded-xl p-6 max-w-2xl max-h-[80vh] overflow-y-auto" on:click={(e) => e.stopPropagation()}>
         <div class="flex justify-between items-center mb-4">
           <div class="flex items-center">
             <div class="text-3xl mr-3">{selectedStrategy.icon}</div>
