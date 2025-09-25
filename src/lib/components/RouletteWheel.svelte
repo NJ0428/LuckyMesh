@@ -47,9 +47,7 @@
 
   <!-- 룰렛 휠 배경 -->
   <div
-    class="absolute inset-0 rounded-full shadow-2xl transition-transform ease-out wheel-3d"
-    class:duration-1000={!isSpinning}
-    class:spinning={isSpinning}
+    class="absolute inset-0 rounded-full shadow-2xl transition-transform wheel-3d"
     style="
       background: conic-gradient(
         from 0deg,
@@ -63,6 +61,7 @@
       );
       transform: rotate({rotation}deg) perspective(1000px) rotateX(5deg);
       transition-duration: {isSpinning ? spinDuration + 'ms' : '1000ms'};
+      transition-timing-function: {isSpinning ? 'cubic-bezier(0.17, 0.67, 0.12, 0.99)' : 'ease-out'};
       box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), inset 0 0 30px rgba(255, 255, 255, 0.1);
     "
   >
@@ -101,13 +100,13 @@
     {#each rouletteNumbers as numberObj, index}
       {@const position = getNumberPosition(index, rouletteNumbers.length)}
       <div
-        class="absolute flex items-center justify-center w-12 h-12 rounded-full border-2 border-white/30 {numberSize} font-bold text-white transition-transform ease-out"
-        class:duration-1000={!isSpinning}
+        class="absolute flex items-center justify-center w-12 h-12 rounded-full border-2 border-white/30 {numberSize} font-bold text-white transition-transform"
         style="
           left: 50%;
           top: 50%;
           transform: translate(-50%, -50%) translate({position.x}px, {position.y}px) rotate({rotation}deg) rotate({-position.angle - 90}deg);
           transition-duration: {isSpinning ? spinDuration + 'ms' : '1000ms'};
+          transition-timing-function: {isSpinning ? 'cubic-bezier(0.17, 0.67, 0.12, 0.99)' : 'ease-out'};
         "
       >
         {numberObj.number}

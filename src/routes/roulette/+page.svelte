@@ -26,7 +26,7 @@
   function formatCurrency(amount) {
     return new Intl.NumberFormat('ko-KR', {
       style: 'currency',
-      currency: 'USD'
+      currency: 'KRW'
     }).format(amount);
   }
 

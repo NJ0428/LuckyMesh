@@ -145,8 +145,11 @@ export const rouletteStore = writable(initialState);
 export const rouletteActions = {
   // 베팅
   placeBet(betType, betValue, amount) {
+    console.log('rouletteActions.placeBet 호출됨:', { betType, betValue, amount });
     rouletteStore.update(state => {
+      console.log('현재 상태:', { gameState: state.gameState, balance: state.balance });
       if (state.gameState !== 'betting' || state.balance < amount) {
+        console.log('베팅 불가 조건:', { gameState: state.gameState, balance: state.balance, amount });
         return state;
       }
 
@@ -205,9 +208,9 @@ export const rouletteActions = {
       const singleNumberAngle = 360 / rouletteNumbers.length;
       const targetAngle = numberIndex * singleNumberAngle;
 
-      // 여러 바퀴 돌기 + 타겟 각도
+      // 여러 바퀴 돌기 + 타겟 각도 (포인터는 12시 방향에 있으므로 270도 오프셋 추가)
       const totalRotations = 5 + Math.random() * 3; // 5-8바퀴
-      const finalRotation = (totalRotations * 360) + (360 - targetAngle);
+      const finalRotation = (totalRotations * 360) + (270 - targetAngle);
 
       const spinDuration = 3000 + Math.random() * 2000; // 3-5초
 
