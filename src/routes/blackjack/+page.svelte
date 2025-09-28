@@ -8,16 +8,36 @@
   let dealingInProgress = false;
   let cardAnimationDelay = 0;
 
-  let gameState;
   let selectedBetAmount = 100;
   let showRules = false;
 
-  $: gameState = $blackjackStore;
+  // 컴포넌트 마운트 시 스토어 초기화 확인
+  onMount(() => {
+    // 스토어가 제대로 초기화되지 않았다면 리셋
+    if (!$blackjackStore || typeof $blackjackStore !== 'object') {
+      blackjackActions.resetGame();
+    }
+  });
+
+  $: gameState = $blackjackStore || {
+    balance: 10000,
+    gameState: 'betting',
+    message: '베팅을 시작하세요!',
+    playerHands: [[]],
+    dealerHand: [],
+    bets: [0],
+    results: [],
+    currentHandIndex: 0,
+    canDouble: false,
+    canSplit: false,
+    canSurrender: false,
+    insuranceBet: 0
+  };
 
   const betOptions = [10, 25, 50, 100, 250, 500];
 
   function placeBet() {
-    if (gameState.balance >= selectedBetAmount) {
+    if ((gameState?.balance || 0) >= selectedBetAmount) {
       blackjackActions.placeBet(selectedBetAmount);
     }
   }
@@ -85,7 +105,7 @@
 
         <div class="flex items-center space-x-6">
           <div class="text-center">
-            <div class="text-2xl font-bold">{formatCurrency(gameState.balance)}</div>
+            <div class="text-2xl font-bold">{formatCurrency(gameState?.balance || 0)}</div>
             <div class="text-sm opacity-90">잔고</div>
           </div>
 
@@ -110,20 +130,20 @@
           <!-- 게임 상태 메시지 -->
           <div class="text-center mb-6">
             <div class="bg-gradient-to-r from-primary-soft-purple to-primary-soft-pink text-black px-6 py-3 rounded-full inline-block">
-              <span class="font-bold">{gameState.message}</span>
+              <span class="font-bold">{gameState?.message || '로딩 중...'}</span>
             </div>
           </div>
 
           <!-- 딜러 영역 -->
           <div class="text-center mb-8">
             <div class="bg-gradient-to-r from-red-500 to-red-600 text-black py-3 px-6 rounded-lg mb-4 font-bold inline-block">
-              딜러 {gameState.gameState !== 'betting' && gameState.gameState !== 'insurance' ? `(${getHandValue(gameState.dealerHand)})` : ''}
+              딜러 {gameState?.gameState !== 'betting' && gameState?.gameState !== 'insurance' ? `(${getHandValue(gameState?.dealerHand || [])})` : ''}
             </div>
 
             <div class="flex justify-center space-x-2 mb-4 min-h-[120px] items-end">
-              {#each gameState.dealerHand as card, index}
+              {#each (gameState?.dealerHand || []) as card, index}
                 <!-- 첫 번째 카드는 게임이 끝나기 전까지 숨김 -->
-                {#if index === 0 && gameState.gameState !== 'finished' && gameState.gameState !== 'dealer-turn'}
+                {#if index === 0 && gameState?.gameState !== 'finished' && gameState?.gameState !== 'dealer-turn'}
                   <EnhancedPlayingCard
                     isHidden={true}
                     size="large"
@@ -138,8 +158,8 @@
                     size="large"
                     isDealing={dealingInProgress}
                     dealDelay={index * 300}
-                    flipAnimation={index === 0 && (gameState.gameState === 'finished' || gameState.gameState === 'dealer-turn')}
-                    glowEffect={gameState.gameState === 'finished' && index === 0}
+                    flipAnimation={index === 0 && (gameState?.gameState === 'finished' || gameState?.gameState === 'dealer-turn')}
+                    glowEffect={gameState?.gameState === 'finished' && index === 0}
                   />
                 {/if}
               {/each}
@@ -148,12 +168,12 @@
 
           <!-- 플레이어 영역들 -->
           <div class="space-y-6">
-            {#each gameState.playerHands as hand, handIndex}
-              <div class="text-center {handIndex === gameState.currentHandIndex && gameState.gameState === 'playing' ? 'ring-2 ring-blue-500 rounded-lg p-4' : ''}">
+            {#each (gameState?.playerHands || [[]]) as hand, handIndex}
+              <div class="text-center {handIndex === gameState?.currentHandIndex && gameState?.gameState === 'playing' ? 'ring-2 ring-blue-500 rounded-lg p-4' : ''}">
                 <div class="bg-gradient-to-r from-blue-500 to-blue-600 text-black py-3 px-6 rounded-lg mb-4 font-bold inline-block">
-                  플레이어 {gameState.playerHands.length > 1 ? `핸드 ${handIndex + 1}` : ''}
+                  플레이어 {(gameState?.playerHands || []).length > 1 ? `핸드 ${handIndex + 1}` : ''}
                   {hand.length > 0 ? `(${getHandValue(hand)})` : ''}
-                  {#if gameState.bets[handIndex]}• 베팅: {formatCurrency(gameState.bets[handIndex])}{/if}
+                  {#if gameState?.bets?.[handIndex]}• 베팅: {formatCurrency(gameState.bets[handIndex])}{/if}
                 </div>
 
                 <div class="flex justify-center space-x-2 mb-4 min-h-[120px] items-end">
@@ -163,16 +183,16 @@
                       rank={card.value}
                       size="large"
                       isDealing={dealingInProgress}
-                      dealDelay={(cardIndex + gameState.dealerHand.length) * 300}
-                      isSelected={handIndex === gameState.currentHandIndex && gameState.gameState === 'playing'}
-                      isWinning={gameState.results[handIndex] === 'win' || gameState.results[handIndex] === 'blackjack'}
+                      dealDelay={(cardIndex + (gameState?.dealerHand?.length || 0)) * 300}
+                      isSelected={handIndex === gameState?.currentHandIndex && gameState?.gameState === 'playing'}
+                      isWinning={gameState?.results?.[handIndex] === 'win' || gameState?.results?.[handIndex] === 'blackjack'}
                       glowEffect={getHandValue(hand) === 21}
                     />
                   {/each}
                 </div>
 
                 <!-- 결과 표시 -->
-                {#if gameState.results[handIndex]}
+                {#if gameState?.results?.[handIndex]}
                   <div class="text-2xl font-bold mb-2 {gameState.results[handIndex] === 'win' || gameState.results[handIndex] === 'blackjack' ? 'text-green-600' : gameState.results[handIndex] === 'push' ? 'text-yellow-600' : 'text-red-600'}">
                     {getResultText(gameState.results[handIndex])}
                   </div>
@@ -182,10 +202,10 @@
           </div>
 
           <!-- 인슈어런스 옵션 -->
-          {#if gameState.gameState === 'insurance'}
+          {#if gameState?.gameState === 'insurance'}
             <div class="flex justify-center gap-4 mb-6">
               <PastelButton variant="primary" on:click={blackjackActions.insurance}>
-                인슈어런스 ({formatCurrency(Math.floor(gameState.bets[0] / 2))})
+                인슈어런스 ({formatCurrency(Math.floor((gameState?.bets?.[0] || 0) / 2))})
               </PastelButton>
               <PastelButton variant="secondary" on:click={blackjackActions.noInsurance}>
                 거절
@@ -195,16 +215,16 @@
 
           <!-- 게임 컨트롤 -->
           <div class="flex flex-wrap justify-center gap-4">
-            {#if gameState.gameState === 'betting'}
+            {#if gameState?.gameState === 'betting'}
               <PastelButton
                 variant="primary"
                 on:click={placeBet}
-                disabled={gameState.balance < selectedBetAmount}
+                disabled={(gameState?.balance || 0) < selectedBetAmount}
               >
                 베팅 ({formatCurrency(selectedBetAmount)})
               </PastelButton>
 
-              {#if gameState.bets[0] > 0}
+              {#if (gameState?.bets?.[0] || 0) > 0}
                 <PastelButton
                   variant="primary"
                   on:click={blackjackActions.deal}
@@ -220,7 +240,7 @@
                 </PastelButton>
               {/if}
 
-            {:else if gameState.gameState === 'playing'}
+            {:else if gameState?.gameState === 'playing'}
               <PastelButton variant="primary" on:click={blackjackActions.hit}>
                 히트
               </PastelButton>
@@ -229,25 +249,25 @@
                 스탠드
               </PastelButton>
 
-              {#if gameState.canDouble}
-                <PastelButton variant="accent" on:click={blackjackActions.double} disabled={gameState.balance < gameState.bets[gameState.currentHandIndex]}>
+              {#if gameState?.canDouble}
+                <PastelButton variant="accent" on:click={blackjackActions.double} disabled={(gameState?.balance || 0) < (gameState?.bets?.[gameState?.currentHandIndex || 0] || 0)}>
                   더블다운
                 </PastelButton>
               {/if}
 
-              {#if gameState.canSplit}
-                <PastelButton variant="accent" on:click={blackjackActions.split} disabled={gameState.balance < gameState.bets[gameState.currentHandIndex]}>
+              {#if gameState?.canSplit}
+                <PastelButton variant="accent" on:click={blackjackActions.split} disabled={(gameState?.balance || 0) < (gameState?.bets?.[gameState?.currentHandIndex || 0] || 0)}>
                   스플릿
                 </PastelButton>
               {/if}
 
-              {#if gameState.canSurrender}
+              {#if gameState?.canSurrender}
                 <PastelButton variant="danger" on:click={blackjackActions.surrender}>
                   항복
                 </PastelButton>
               {/if}
 
-            {:else if gameState.gameState === 'finished'}
+            {:else if gameState?.gameState === 'finished'}
               <PastelButton
                 variant="primary"
                 on:click={blackjackActions.newGame}
@@ -277,11 +297,11 @@
         </PastelCard>
 
         <!-- 베팅 정보 -->
-        {#if gameState.bets.reduce((sum, bet) => sum + bet, 0) > 0}
+        {#if (gameState?.bets || []).reduce((sum, bet) => sum + bet, 0) > 0}
           <PastelCard>
             <h3 class="font-bold text-lg mb-4 text-center text-black">현재 베팅</h3>
             <div class="space-y-2 text-black">
-              {#each gameState.bets as bet, index}
+              {#each (gameState?.bets || []) as bet, index}
                 {#if bet > 0}
                   <div class="flex justify-between">
                     <span>핸드 {index + 1}</span>
@@ -289,7 +309,7 @@
                   </div>
                 {/if}
               {/each}
-              {#if gameState.insuranceBet > 0}
+              {#if (gameState?.insuranceBet || 0) > 0}
                 <div class="flex justify-between">
                   <span>인슈어런스</span>
                   <span class="font-bold">{formatCurrency(gameState.insuranceBet)}</span>
@@ -298,7 +318,7 @@
               <hr>
               <div class="flex justify-between font-bold">
                 <span>총 베팅</span>
-                <span>{formatCurrency(gameState.bets.reduce((sum, bet) => sum + bet, 0) + gameState.insuranceBet)}</span>
+                <span>{formatCurrency((gameState?.bets || []).reduce((sum, bet) => sum + bet, 0) + (gameState?.insuranceBet || 0))}</span>
               </div>
             </div>
           </PastelCard>

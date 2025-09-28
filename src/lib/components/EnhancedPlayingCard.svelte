@@ -30,19 +30,133 @@
     large: 'text-xl'
   }[size];
 
-  // 카드 색상 결정
-  $: isRed = suit === 'hearts' || suit === 'diamonds';
+  // 카드 색상 결정 (기호 또는 영어 이름 모두 지원)
+  $: normalizedSuit = suit === '♥' ? 'hearts' :
+                      suit === '♦' ? 'diamonds' :
+                      suit === '♣' ? 'clubs' :
+                      suit === '♠' ? 'spades' : suit;
+
+  $: isRed = normalizedSuit === 'hearts' || normalizedSuit === 'diamonds';
   $: suitIcon = {
     hearts: '♥',
     diamonds: '♦',
     clubs: '♣',
     spades: '♠'
-  }[suit];
+  }[normalizedSuit] || suit;
 
   $: displayRank = rank === 'J' ? 'J' :
                    rank === 'Q' ? 'Q' :
                    rank === 'K' ? 'K' :
                    rank === 'A' ? 'A' : rank;
+
+  // 카드 그림 레이아웃 결정
+  $: cardPattern = getCardPattern(rank, suit);
+
+  function getCardPattern(rank, suit) {
+    // normalizedSuit 사용
+
+    if (rank === 'A') {
+      const aceSize = size === 'large' ? 'text-6xl' : size === 'small' ? 'text-3xl' : 'text-5xl';
+      return { type: 'ace', symbols: [{ x: '50%', y: '50%', size: aceSize }] };
+    } else if (['J', 'Q', 'K'].includes(rank)) {
+      return { type: 'face', symbols: [] };
+    } else {
+      const num = parseInt(rank);
+      const positions = getNumberPositions(num);
+      return {
+        type: 'number',
+        symbols: positions.map(pos => ({
+          x: pos.x,
+          y: pos.y,
+          size: size === 'large' ? 'text-2xl' : size === 'small' ? 'text-sm' : 'text-lg',
+          rotate: pos.rotate
+        }))
+      };
+    }
+  }
+
+  function getNumberPositions(num) {
+    const positions = [];
+
+    switch(num) {
+      case 2:
+        positions.push({ x: '50%', y: '25%' });
+        positions.push({ x: '50%', y: '75%', rotate: true });
+        break;
+      case 3:
+        positions.push({ x: '50%', y: '20%' });
+        positions.push({ x: '50%', y: '50%' });
+        positions.push({ x: '50%', y: '80%', rotate: true });
+        break;
+      case 4:
+        positions.push({ x: '30%', y: '25%' });
+        positions.push({ x: '70%', y: '25%' });
+        positions.push({ x: '30%', y: '75%', rotate: true });
+        positions.push({ x: '70%', y: '75%', rotate: true });
+        break;
+      case 5:
+        positions.push({ x: '30%', y: '20%' });
+        positions.push({ x: '70%', y: '20%' });
+        positions.push({ x: '50%', y: '50%' });
+        positions.push({ x: '30%', y: '80%', rotate: true });
+        positions.push({ x: '70%', y: '80%', rotate: true });
+        break;
+      case 6:
+        positions.push({ x: '30%', y: '20%' });
+        positions.push({ x: '70%', y: '20%' });
+        positions.push({ x: '30%', y: '50%' });
+        positions.push({ x: '70%', y: '50%' });
+        positions.push({ x: '30%', y: '80%', rotate: true });
+        positions.push({ x: '70%', y: '80%', rotate: true });
+        break;
+      case 7:
+        positions.push({ x: '30%', y: '17%' });
+        positions.push({ x: '70%', y: '17%' });
+        positions.push({ x: '50%', y: '35%' });
+        positions.push({ x: '30%', y: '50%' });
+        positions.push({ x: '70%', y: '50%' });
+        positions.push({ x: '30%', y: '83%', rotate: true });
+        positions.push({ x: '70%', y: '83%', rotate: true });
+        break;
+      case 8:
+        positions.push({ x: '30%', y: '15%' });
+        positions.push({ x: '70%', y: '15%' });
+        positions.push({ x: '50%', y: '30%' });
+        positions.push({ x: '30%', y: '45%' });
+        positions.push({ x: '70%', y: '45%' });
+        positions.push({ x: '50%', y: '70%', rotate: true });
+        positions.push({ x: '30%', y: '85%', rotate: true });
+        positions.push({ x: '70%', y: '85%', rotate: true });
+        break;
+      case 9:
+        positions.push({ x: '30%', y: '15%' });
+        positions.push({ x: '70%', y: '15%' });
+        positions.push({ x: '30%', y: '35%' });
+        positions.push({ x: '70%', y: '35%' });
+        positions.push({ x: '50%', y: '50%' });
+        positions.push({ x: '30%', y: '65%', rotate: true });
+        positions.push({ x: '70%', y: '65%', rotate: true });
+        positions.push({ x: '30%', y: '85%', rotate: true });
+        positions.push({ x: '70%', y: '85%', rotate: true });
+        break;
+      case 10:
+        positions.push({ x: '30%', y: '12%' });
+        positions.push({ x: '70%', y: '12%' });
+        positions.push({ x: '50%', y: '25%' });
+        positions.push({ x: '30%', y: '40%' });
+        positions.push({ x: '70%', y: '40%' });
+        positions.push({ x: '30%', y: '60%', rotate: true });
+        positions.push({ x: '70%', y: '60%', rotate: true });
+        positions.push({ x: '50%', y: '75%', rotate: true });
+        positions.push({ x: '30%', y: '88%', rotate: true });
+        positions.push({ x: '70%', y: '88%', rotate: true });
+        break;
+      default:
+        positions.push({ x: '50%', y: '50%' });
+    }
+
+    return positions;
+  }
 
   onMount(() => {
     if (isDealing) {
@@ -94,15 +208,39 @@
           <div class="suit {textSize} {isRed ? 'text-red-500' : 'text-black'}">{suitIcon}</div>
         </div>
 
-        <!-- 중앙 큰 마크 -->
-        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-          <div class="text-4xl {isRed ? 'text-red-500' : 'text-black'} opacity-20">{suitIcon}</div>
-        </div>
-
         <!-- 우하단 (뒤집힌 형태) -->
         <div class="absolute bottom-1 right-1 flex flex-col items-center transform rotate-180">
           <div class="rank {textSize} font-bold {isRed ? 'text-red-500' : 'text-black'}">{displayRank}</div>
           <div class="suit {textSize} {isRed ? 'text-red-500' : 'text-black'}">{suitIcon}</div>
+        </div>
+
+        <!-- 카드 중앙 패턴 -->
+        <div class="absolute inset-2">
+          {#if cardPattern.type === 'ace'}
+            <!-- 에이스 패턴 -->
+            <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+              <div class="{cardPattern.symbols[0].size} {isRed ? 'text-red-500' : 'text-black'}">{suitIcon}</div>
+            </div>
+          {:else if cardPattern.type === 'face'}
+            <!-- 페이스 카드 패턴 -->
+            <div class="absolute inset-0 flex items-center justify-center">
+              <div class="text-center">
+                <div class="{size === 'large' ? 'text-5xl' : size === 'small' ? 'text-2xl' : 'text-4xl'} {isRed ? 'text-red-500' : 'text-black'} mb-1">{suitIcon}</div>
+                <div class="{size === 'large' ? 'text-3xl' : size === 'small' ? 'text-lg' : 'text-2xl'} font-bold {isRed ? 'text-red-500' : 'text-black'}">{displayRank}</div>
+                <div class="{size === 'large' ? 'text-5xl' : size === 'small' ? 'text-2xl' : 'text-4xl'} {isRed ? 'text-red-500' : 'text-black'} mt-1">{suitIcon}</div>
+              </div>
+            </div>
+          {:else if cardPattern.type === 'number'}
+            <!-- 숫자 카드 패턴 -->
+            {#each cardPattern.symbols as symbol, index}
+              <div
+                class="absolute transform -translate-x-1/2 -translate-y-1/2 {symbol.rotate ? 'rotate-180' : ''}"
+                style="left: {symbol.x}; top: {symbol.y};"
+              >
+                <div class="{symbol.size} {isRed ? 'text-red-500' : 'text-black'}">{suitIcon}</div>
+              </div>
+            {/each}
+          {/if}
         </div>
 
         <!-- 윈윈 효과 -->
