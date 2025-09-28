@@ -56,7 +56,7 @@
     // normalizedSuit 사용
 
     if (rank === 'A') {
-      const aceSize = size === 'large' ? 'text-6xl' : size === 'small' ? 'text-3xl' : 'text-5xl';
+      const aceSize = size === 'large' ? 'text-4xl' : size === 'small' ? 'text-2xl' : 'text-3xl';
       return { type: 'ace', symbols: [{ x: '50%', y: '50%', size: aceSize }] };
     } else if (['J', 'Q', 'K'].includes(rank)) {
       return { type: 'face', symbols: [] };
@@ -68,7 +68,7 @@
         symbols: positions.map(pos => ({
           x: pos.x,
           y: pos.y,
-          size: size === 'large' ? 'text-2xl' : size === 'small' ? 'text-sm' : 'text-lg',
+          size: size === 'large' ? 'text-xl' : size === 'small' ? 'text-xs' : 'text-base',
           rotate: pos.rotate
         }))
       };
@@ -225,9 +225,9 @@
             <!-- 페이스 카드 패턴 -->
             <div class="absolute inset-0 flex items-center justify-center">
               <div class="text-center">
-                <div class="{size === 'large' ? 'text-5xl' : size === 'small' ? 'text-2xl' : 'text-4xl'} {isRed ? 'text-red-500' : 'text-black'} mb-1">{suitIcon}</div>
-                <div class="{size === 'large' ? 'text-3xl' : size === 'small' ? 'text-lg' : 'text-2xl'} font-bold {isRed ? 'text-red-500' : 'text-black'}">{displayRank}</div>
-                <div class="{size === 'large' ? 'text-5xl' : size === 'small' ? 'text-2xl' : 'text-4xl'} {isRed ? 'text-red-500' : 'text-black'} mt-1">{suitIcon}</div>
+                <div class="{size === 'large' ? 'text-3xl' : size === 'small' ? 'text-lg' : 'text-2xl'} {isRed ? 'text-red-500' : 'text-black'} mb-1">{suitIcon}</div>
+                <div class="{size === 'large' ? 'text-2xl' : size === 'small' ? 'text-base' : 'text-xl'} font-bold {isRed ? 'text-red-500' : 'text-black'}">{displayRank}</div>
+                <div class="{size === 'large' ? 'text-3xl' : size === 'small' ? 'text-lg' : 'text-2xl'} {isRed ? 'text-red-500' : 'text-black'} mt-1">{suitIcon}</div>
               </div>
             </div>
           {:else if cardPattern.type === 'number'}
