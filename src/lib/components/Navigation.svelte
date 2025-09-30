@@ -112,6 +112,9 @@
                   <a href="/balance" class="block px-4 py-2 text-sm text-gray-600 hover:bg-white/20 hover:text-primary-soft-purple transition-colors duration-200 font-poppins">
                     💰 잔액 관리
                   </a>
+                  <a href="/payment" class="block px-4 py-2 text-sm text-gray-600 hover:bg-white/20 hover:text-primary-soft-purple transition-colors duration-200 font-poppins">
+                    💳 결제/충전
+                  </a>
                   <a href="/history" class="block px-4 py-2 text-sm text-gray-600 hover:bg-white/20 hover:text-primary-soft-purple transition-colors duration-200 font-poppins">
                     📊 게임 기록
                   </a>
@@ -197,6 +200,9 @@
               </a>
               <a href="/balance" class="block px-3 py-2 rounded-md text-white hover:bg-casino-gold/20 hover:text-casino-gold transition-colors duration-200">
                 💰 잔액 관리
+              </a>
+              <a href="/payment" class="block px-3 py-2 rounded-md text-white hover:bg-casino-gold/20 hover:text-casino-gold transition-colors duration-200">
+                💳 결제/충전
               </a>
               <a href="/history" class="block px-3 py-2 rounded-md text-white hover:bg-casino-gold/20 hover:text-casino-gold transition-colors duration-200">
                 📊 게임 기록
