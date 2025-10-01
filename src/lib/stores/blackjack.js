@@ -96,6 +96,79 @@ function shouldDealerHit(hand) {
   return value < 17;
 }
 
+// Perfect Pairs 사이드 베팅 평가
+function evaluatePerfectPairs(playerHand) {
+  if (playerHand.length < 2) return null;
+
+  const [card1, card2] = playerHand;
+
+  // 카드 값이 같아야 함
+  if (card1.value !== card2.value) return null;
+
+  // Perfect Pair (같은 카드) - 25:1
+  if (card1.suit === card2.suit) {
+    return { type: 'perfect', multiplier: 25, name: '퍼펙트 페어' };
+  }
+
+  // Colored Pair (같은 색) - 12:1
+  const card1Color = (card1.suit === '♥' || card1.suit === '♦') ? 'red' : 'black';
+  const card2Color = (card2.suit === '♥' || card2.suit === '♦') ? 'red' : 'black';
+
+  if (card1Color === card2Color) {
+    return { type: 'colored', multiplier: 12, name: '컬러드 페어' };
+  }
+
+  // Mixed Pair (다른 색) - 6:1
+  return { type: 'mixed', multiplier: 6, name: '믹스드 페어' };
+}
+
+// 21+3 사이드 베팅 평가
+function evaluateTwentyOnePlusThree(playerHand, dealerUpCard) {
+  if (playerHand.length < 2 || !dealerUpCard) return null;
+
+  const cards = [...playerHand.slice(0, 2), dealerUpCard];
+
+  // 카드를 포커 핸드로 평가
+  const suits = cards.map(card => card.suit);
+  const values = cards.map(card => {
+    if (card.value === 'A') return 1;
+    if (['J', 'Q', 'K'].includes(card.value)) return [11, 12, 13][['J', 'Q', 'K'].indexOf(card.value)];
+    return parseInt(card.value);
+  }).sort((a, b) => a - b);
+
+  // Suited Three of a Kind - 100:1
+  if (values[0] === values[1] && values[1] === values[2] &&
+      suits[0] === suits[1] && suits[1] === suits[2]) {
+    return { type: 'suited-three-kind', multiplier: 100, name: '수티드 스리 오브 어 카인드' };
+  }
+
+  // Straight Flush - 40:1
+  const isFlush = suits[0] === suits[1] && suits[1] === suits[2];
+  const isStraight = (values[2] - values[1] === 1 && values[1] - values[0] === 1) ||
+                    (values[0] === 1 && values[1] === 12 && values[2] === 13); // A-Q-K
+
+  if (isFlush && isStraight) {
+    return { type: 'straight-flush', multiplier: 40, name: '스트레이트 플러시' };
+  }
+
+  // Three of a Kind - 30:1
+  if (values[0] === values[1] && values[1] === values[2]) {
+    return { type: 'three-kind', multiplier: 30, name: '스리 오브 어 카인드' };
+  }
+
+  // Straight - 10:1
+  if (isStraight) {
+    return { type: 'straight', multiplier: 10, name: '스트레이트' };
+  }
+
+  // Flush - 5:1
+  if (isFlush) {
+    return { type: 'flush', multiplier: 5, name: '플러시' };
+  }
+
+  return null;
+}
+
 // 게임 상태 초기값
 const initialState = {
   // 게임 진행 상태
@@ -127,6 +200,16 @@ const initialState = {
   insuranceBet: 0,
   canInsurance: false,
 
+  // 사이드 베팅
+  sideBets: {
+    perfectPairs: 0,
+    twentyOnePlusThree: 0
+  },
+  sideBetResults: {
+    perfectPairs: null,
+    twentyOnePlusThree: null
+  },
+
   // 딜링 애니메이션
   isDealing: false,
 
@@ -154,17 +237,60 @@ export const blackjackActions = {
     });
   },
 
+  // 사이드 베팅 - Perfect Pairs
+  placePerfectPairsBet(amount) {
+    blackjackStore.update(state => {
+      if (state.gameState !== 'betting' || state.balance < amount) {
+        return state;
+      }
+
+      return {
+        ...state,
+        sideBets: {
+          ...state.sideBets,
+          perfectPairs: amount
+        },
+        balance: state.balance - amount,
+        message: `Perfect Pairs에 $${amount}을 베팅했습니다.`
+      };
+    });
+  },
+
+  // 사이드 베팅 - 21+3
+  placeTwentyOnePlusThreeBet(amount) {
+    blackjackStore.update(state => {
+      if (state.gameState !== 'betting' || state.balance < amount) {
+        return state;
+      }
+
+      return {
+        ...state,
+        sideBets: {
+          ...state.sideBets,
+          twentyOnePlusThree: amount
+        },
+        balance: state.balance - amount,
+        message: `21+3에 $${amount}을 베팅했습니다.`
+      };
+    });
+  },
+
   // 베팅 초기화
   clearBets() {
     blackjackStore.update(state => {
       if (state.gameState !== 'betting') return state;
 
       const totalBets = state.bets.reduce((sum, bet) => sum + bet, 0);
+      const totalSideBets = state.sideBets.perfectPairs + state.sideBets.twentyOnePlusThree;
 
       return {
         ...state,
         bets: [0],
-        balance: state.balance + totalBets,
+        sideBets: {
+          perfectPairs: 0,
+          twentyOnePlusThree: 0
+        },
+        balance: state.balance + totalBets + totalSideBets,
         message: '베팅이 초기화되었습니다.'
       };
     });
@@ -199,6 +325,10 @@ export const blackjackActions = {
       // 항복 가능 체크
       const canSurrender = true;
 
+      // 사이드 베팅 결과 평가
+      const perfectPairsResult = state.sideBets.perfectPairs > 0 ? evaluatePerfectPairs(playerHand) : null;
+      const twentyOnePlusThreeResult = state.sideBets.twentyOnePlusThree > 0 ? evaluateTwentyOnePlusThree(playerHand, dealerHand[0]) : null;
+
       // 플레이어 블랙잭인 경우 즉시 게임 종료
       if (playerValue === 21) {
         return {
@@ -208,6 +338,10 @@ export const blackjackActions = {
           dealerHand,
           gameState: 'finished',
           results: [dealerValue === 21 ? 'push' : 'blackjack'],
+          sideBetResults: {
+            perfectPairs: perfectPairsResult,
+            twentyOnePlusThree: twentyOnePlusThreeResult
+          },
           message: dealerValue === 21 ? '무승부!' : '블랙잭!'
         };
       }
@@ -223,6 +357,10 @@ export const blackjackActions = {
         canSplit,
         canSurrender,
         canInsurance,
+        sideBetResults: {
+          perfectPairs: perfectPairsResult,
+          twentyOnePlusThree: twentyOnePlusThreeResult
+        },
         isDealing: true,
         message: canInsurance ? '인슈어런스를 하시겠습니까?' : '카드를 받거나 스탠드하세요.'
       };
@@ -530,6 +668,17 @@ export const blackjackActions = {
         winnings += state.insuranceBet * 3; // 2:1 배당 + 원금
       }
 
+      // 사이드 베팅 상금 계산
+      if (state.sideBetResults.perfectPairs) {
+        const perfectPairsWin = state.sideBets.perfectPairs * (state.sideBetResults.perfectPairs.multiplier + 1);
+        winnings += perfectPairsWin;
+      }
+
+      if (state.sideBetResults.twentyOnePlusThree) {
+        const twentyOnePlusThreeWin = state.sideBets.twentyOnePlusThree * (state.sideBetResults.twentyOnePlusThree.multiplier + 1);
+        winnings += twentyOnePlusThreeWin;
+      }
+
       return {
         ...state,
         balance: state.balance + winnings,
@@ -562,6 +711,14 @@ export const blackjackActions = {
         insuranceBet: 0,
         canInsurance: false,
         insuranceWin: false,
+        sideBets: {
+          perfectPairs: 0,
+          twentyOnePlusThree: 0
+        },
+        sideBetResults: {
+          perfectPairs: null,
+          twentyOnePlusThree: null
+        },
         isDealing: false,
         message: '새 게임을 시작하세요!'
       };
