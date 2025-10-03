@@ -101,7 +101,10 @@ const initialState = {
     banker: 0,
     tie: 0,
     playerPair: 0,
-    bankerPair: 0
+    bankerPair: 0,
+    bigSmall: 0,
+    lucky6: 0,
+    dragonBonus: 0
   },
 
   // 게임 결과
@@ -110,7 +113,10 @@ const initialState = {
   // 사이드 베팅 결과
   sideBets: {
     playerPair: false,
-    bankerPair: false
+    bankerPair: false,
+    bigSmall: null, // 'big' (5-6장), 'small' (4장)
+    lucky6: null, // { banker6: true, twoCard: boolean } - 뱅커가 6으로 승리
+    dragonBonus: null // { winner: 'player'|'banker', margin: number, payout: number }
   },
 
   // 플레이어 잔고
@@ -119,12 +125,165 @@ const initialState = {
   // 게임 히스토리
   history: [],
 
+  // 로드맵 데이터
+  roadmaps: {
+    beadRoad: [],
+    bigRoad: [],
+    bigEyeRoad: [],
+    smallRoad: [],
+    cockroachRoad: []
+  },
+
+  // 통계
+  stats: {
+    playerWins: 0,
+    bankerWins: 0,
+    ties: 0,
+    playerPairs: 0,
+    bankerPairs: 0,
+    currentStreak: { type: null, count: 0 },
+    longestStreak: { type: null, count: 0 },
+    hotTrend: null, // 'player', 'banker', 'tie'
+    shoeNumber: 1,
+    gamesInShoe: 0
+  },
+
+  // 베팅 시스템
+  bettingSystem: {
+    lastBets: null,
+    favoriteBets: [],
+    betTimer: 30,
+    betLimits: {
+      min: 10,
+      max: 1000
+    }
+  },
+
   // 딜링 애니메이션
   isDealing: false,
 
   // 메시지
   message: '베팅을 시작하세요!'
 };
+
+// 로드맵 계산 함수들
+function calculateBeadRoad(history) {
+  return history.map(game => ({
+    winner: game.winner,
+    playerPair: game.sideBets.playerPair,
+    bankerPair: game.sideBets.bankerPair
+  }));
+}
+
+function calculateBigRoad(history) {
+  const bigRoad = [];
+  let currentColumn = [];
+  let lastWinner = null;
+
+  history.forEach(game => {
+    const winner = game.winner === 'tie' ? lastWinner : game.winner;
+
+    if (winner !== lastWinner && lastWinner !== null) {
+      bigRoad.push([...currentColumn]);
+      currentColumn = [];
+    }
+
+    if (winner) {
+      currentColumn.push({
+        winner,
+        tie: game.winner === 'tie'
+      });
+      if (game.winner !== 'tie') {
+        lastWinner = winner;
+      }
+    }
+  });
+
+  if (currentColumn.length > 0) {
+    bigRoad.push(currentColumn);
+  }
+
+  return bigRoad;
+}
+
+function calculateDerivedRoad(bigRoad, skip) {
+  const derivedRoad = [];
+
+  for (let i = skip; i < bigRoad.length; i++) {
+    const currentDepth = bigRoad[i].length;
+    const compareColumn = i - skip;
+
+    if (compareColumn < 0) continue;
+
+    const compareDepth = bigRoad[compareColumn].length;
+
+    if (i > skip && bigRoad[i - 1]) {
+      const prevCompareColumn = i - skip - 1;
+      if (prevCompareColumn >= 0 && bigRoad[prevCompareColumn]) {
+        const prevCompareDepth = bigRoad[prevCompareColumn].length;
+
+        if (currentDepth === compareDepth && prevCompareDepth === bigRoad[prevCompareColumn - 1]?.length) {
+          derivedRoad.push('red');
+        } else {
+          derivedRoad.push('blue');
+        }
+      }
+    }
+  }
+
+  return derivedRoad;
+}
+
+function updateRoadmaps(history) {
+  return {
+    beadRoad: calculateBeadRoad(history),
+    bigRoad: calculateBigRoad(history),
+    bigEyeRoad: calculateDerivedRoad(calculateBigRoad(history), 1),
+    smallRoad: calculateDerivedRoad(calculateBigRoad(history), 2),
+    cockroachRoad: calculateDerivedRoad(calculateBigRoad(history), 3)
+  };
+}
+
+function updateStats(state, winner, sideBets) {
+  const stats = { ...state.stats };
+
+  // 승리 카운트
+  if (winner === 'player') stats.playerWins++;
+  if (winner === 'banker') stats.bankerWins++;
+  if (winner === 'tie') stats.ties++;
+
+  // 페어 카운트
+  if (sideBets.playerPair) stats.playerPairs++;
+  if (sideBets.bankerPair) stats.bankerPairs++;
+
+  // 연승 추적
+  if (winner === stats.currentStreak.type) {
+    stats.currentStreak.count++;
+  } else {
+    stats.currentStreak = { type: winner, count: 1 };
+  }
+
+  if (stats.currentStreak.count > stats.longestStreak.count) {
+    stats.longestStreak = { ...stats.currentStreak };
+  }
+
+  // 핫 트렌드 (최근 10게임 기준)
+  const recentGames = state.history.slice(0, 10);
+  const recentPlayerWins = recentGames.filter(g => g.winner === 'player').length;
+  const recentBankerWins = recentGames.filter(g => g.winner === 'banker').length;
+
+  if (recentPlayerWins > recentBankerWins + 2) {
+    stats.hotTrend = 'player';
+  } else if (recentBankerWins > recentPlayerWins + 2) {
+    stats.hotTrend = 'banker';
+  } else {
+    stats.hotTrend = null;
+  }
+
+  stats.gamesInShoe++;
+
+  return stats;
+}
 
 export const baccaratStore = writable(initialState);
 
@@ -251,6 +410,41 @@ export const baccaratActions = {
         winner = 'tie';
       }
 
+      // 사이드 베팅 결과 계산
+      const totalCards = playerHand.length + bankerHand.length;
+      const bigSmall = totalCards === 4 ? 'small' : 'big';
+
+      // Lucky 6: 뱅커가 6으로 승리
+      let lucky6 = null;
+      if (winner === 'banker' && finalBankerScore === 6) {
+        lucky6 = {
+          banker6: true,
+          twoCard: bankerHand.length === 2
+        };
+      }
+
+      // Dragon Bonus: 승리 마진 계산
+      let dragonBonus = null;
+      const margin = Math.abs(finalPlayerScore - finalBankerScore);
+      if (winner !== 'tie' && margin >= 4) {
+        const payoutMap = {
+          4: 1, 5: 2, 6: 4, 7: 6, 8: 10, 9: 30
+        };
+        dragonBonus = {
+          winner,
+          margin,
+          payout: payoutMap[margin] || 30
+        };
+      }
+      // 내추럴 승리 (9 또는 8)
+      if (winner !== 'tie' && (finalPlayerScore === 9 || finalBankerScore === 9)) {
+        dragonBonus = {
+          winner,
+          margin: finalPlayerScore === 9 || finalBankerScore === 9 ? 9 : 8,
+          payout: finalPlayerScore === 9 || finalBankerScore === 9 ? 30 : 10
+        };
+      }
+
       return {
         ...state,
         deck: newDeck,
@@ -259,6 +453,12 @@ export const baccaratActions = {
         playerScore: finalPlayerScore,
         bankerScore: finalBankerScore,
         winner,
+        sideBets: {
+          ...state.sideBets,
+          bigSmall,
+          lucky6,
+          dragonBonus
+        },
         gameState: 'finished',
         isDealing: false,
         message: `게임 종료! ${winner === 'player' ? '플레이어' : winner === 'banker' ? '뱅커' : '무승부'} 승리!`
@@ -286,6 +486,8 @@ export const baccaratActions = {
       }
       if (winner === 'tie' && bets.tie > 0) {
         winnings += bets.tie * 9; // 8:1 배당
+        // Tie일 때 플레이어/뱅커 베팅 반환
+        winnings += bets.player + bets.banker;
       }
 
       // 사이드 베팅 결과
@@ -294,6 +496,29 @@ export const baccaratActions = {
       }
       if (sideBets.bankerPair && bets.bankerPair > 0) {
         winnings += bets.bankerPair * 12; // 11:1 배당
+      }
+
+      // Big/Small 베팅
+      if (bets.bigSmall > 0 && sideBets.bigSmall) {
+        if (sideBets.bigSmall === 'big') {
+          winnings += bets.bigSmall * 1.54; // 0.54:1 배당
+        } else {
+          winnings += bets.bigSmall * 2.5; // 1.5:1 배당
+        }
+      }
+
+      // Lucky 6 베팅
+      if (bets.lucky6 > 0 && sideBets.lucky6) {
+        if (sideBets.lucky6.twoCard) {
+          winnings += bets.lucky6 * 21; // 20:1 배당 (2장으로 6)
+        } else {
+          winnings += bets.lucky6 * 13; // 12:1 배당 (3장으로 6)
+        }
+      }
+
+      // Dragon Bonus 베팅
+      if (bets.dragonBonus > 0 && sideBets.dragonBonus) {
+        winnings += bets.dragonBonus * (sideBets.dragonBonus.payout + 1);
       }
 
       // 히스토리 추가
@@ -307,10 +532,27 @@ export const baccaratActions = {
         timestamp: new Date()
       };
 
+      const newHistory = [gameResult, ...state.history.slice(0, 49)]; // 최근 50게임 보관 (로드맵용)
+
+      // 통계 업데이트
+      const updatedStats = updateStats(state, winner, sideBets);
+
+      // 로드맵 업데이트
+      const updatedRoadmaps = updateRoadmaps(newHistory);
+
+      // 마지막 베팅 저장
+      const lastBets = { ...bets };
+
       return {
         ...state,
         balance: state.balance + winnings,
-        history: [gameResult, ...state.history.slice(0, 19)], // 최근 20게임만 보관
+        history: newHistory,
+        stats: updatedStats,
+        roadmaps: updatedRoadmaps,
+        bettingSystem: {
+          ...state.bettingSystem,
+          lastBets
+        },
         message: winnings > 0 ? `축하합니다! $${winnings}을 획득했습니다!` : '다음 게임에 도전해보세요!'
       };
     });
@@ -338,12 +580,18 @@ export const baccaratActions = {
           banker: 0,
           tie: 0,
           playerPair: 0,
-          bankerPair: 0
+          bankerPair: 0,
+          bigSmall: 0,
+          lucky6: 0,
+          dragonBonus: 0
         },
         winner: null,
         sideBets: {
           playerPair: false,
-          bankerPair: false
+          bankerPair: false,
+          bigSmall: null,
+          lucky6: null,
+          dragonBonus: null
         },
         isDealing: false,
         message: '새 게임을 시작하세요!'
@@ -354,5 +602,132 @@ export const baccaratActions = {
   // 게임 리셋 (잔고 초기화)
   resetGame() {
     baccaratStore.set({ ...initialState, deck: createDeck() });
+  },
+
+  // 이전 베팅 반복
+  repeatLastBet() {
+    baccaratStore.update(state => {
+      if (!state.bettingSystem.lastBets || state.gameState !== 'betting') {
+        return state;
+      }
+
+      const totalBets = Object.values(state.bettingSystem.lastBets).reduce((sum, bet) => sum + bet, 0);
+      if (state.balance < totalBets) {
+        return { ...state, message: '잔액이 부족합니다!' };
+      }
+
+      return {
+        ...state,
+        bets: { ...state.bettingSystem.lastBets },
+        balance: state.balance - totalBets,
+        message: '이전 베팅을 반복했습니다.'
+      };
+    });
+  },
+
+  // 즐겨찾기 베팅 저장
+  saveFavoriteBet(name) {
+    baccaratStore.update(state => {
+      const currentBets = { ...state.bets };
+      const totalBets = Object.values(currentBets).reduce((sum, bet) => sum + bet, 0);
+
+      if (totalBets === 0) {
+        return { ...state, message: '저장할 베팅이 없습니다!' };
+      }
+
+      const favoriteBets = [...state.bettingSystem.favoriteBets];
+      const existingIndex = favoriteBets.findIndex(fav => fav.name === name);
+
+      if (existingIndex >= 0) {
+        favoriteBets[existingIndex] = { name, bets: currentBets };
+      } else {
+        favoriteBets.push({ name, bets: currentBets });
+      }
+
+      return {
+        ...state,
+        bettingSystem: {
+          ...state.bettingSystem,
+          favoriteBets: favoriteBets.slice(0, 5) // 최대 5개까지
+        },
+        message: `"${name}" 베팅 패턴이 저장되었습니다!`
+      };
+    });
+  },
+
+  // 즐겨찾기 베팅 불러오기
+  loadFavoriteBet(name) {
+    baccaratStore.update(state => {
+      if (state.gameState !== 'betting') return state;
+
+      const favorite = state.bettingSystem.favoriteBets.find(fav => fav.name === name);
+      if (!favorite) {
+        return { ...state, message: '저장된 베팅을 찾을 수 없습니다!' };
+      }
+
+      const totalBets = Object.values(favorite.bets).reduce((sum, bet) => sum + bet, 0);
+      if (state.balance < totalBets) {
+        return { ...state, message: '잔액이 부족합니다!' };
+      }
+
+      return {
+        ...state,
+        bets: { ...favorite.bets },
+        balance: state.balance - totalBets,
+        message: `"${name}" 베팅을 불러왔습니다.`
+      };
+    });
+  },
+
+  // 즐겨찾기 베팅 삭제
+  deleteFavoriteBet(name) {
+    baccaratStore.update(state => {
+      return {
+        ...state,
+        bettingSystem: {
+          ...state.bettingSystem,
+          favoriteBets: state.bettingSystem.favoriteBets.filter(fav => fav.name !== name)
+        },
+        message: `"${name}" 베팅 패턴이 삭제되었습니다.`
+      };
+    });
+  },
+
+  // 베팅 제한 설정
+  setBetLimits(min, max) {
+    baccaratStore.update(state => {
+      return {
+        ...state,
+        bettingSystem: {
+          ...state.bettingSystem,
+          betLimits: { min, max }
+        }
+      };
+    });
+  },
+
+  // 새 슈 시작
+  newShoe() {
+    baccaratStore.update(state => {
+      return {
+        ...state,
+        deck: createDeck(),
+        history: [],
+        roadmaps: {
+          beadRoad: [],
+          bigRoad: [],
+          bigEyeRoad: [],
+          smallRoad: [],
+          cockroachRoad: []
+        },
+        stats: {
+          ...state.stats,
+          shoeNumber: state.stats.shoeNumber + 1,
+          gamesInShoe: 0,
+          currentStreak: { type: null, count: 0 }
+        },
+        message: `새로운 슈 #${state.stats.shoeNumber + 1}이 시작되었습니다!`
+      };
+    });
   }
 };
