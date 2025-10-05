@@ -39,6 +39,37 @@
     }
     numberGrid.push(rowNumbers);
   }
+
+  // 인사이드 베팅 조합 생성
+  function getSplitBets(number) {
+    const splits = [];
+    // 가로 스플릿
+    if (number % 3 !== 0 && number <= 33) {
+      splits.push([number, number + 3].sort((a, b) => a - b).join(','));
+    }
+    // 세로 스플릿
+    if ((number - 1) % 3 !== 2 && number <= 34) {
+      splits.push([number, number + 1].sort((a, b) => a - b).join(','));
+    }
+    return splits;
+  }
+
+  function getStreetBets(row) {
+    const streets = [];
+    for (let col = 0; col < 12; col++) {
+      const start = row + col * 3 + 1;
+      streets.push([start, start + 1, start + 2].join(','));
+    }
+    return streets;
+  }
+
+  function getCornerBets(number) {
+    const corners = [];
+    if ((number - 1) % 3 !== 2 && number % 3 !== 0 && number <= 32) {
+      corners.push([number, number + 1, number + 3, number + 4].sort((a, b) => a - b).join(','));
+    }
+    return corners;
+  }
 </script>
 
 <div class="bg-gradient-to-br from-green-800 to-green-900 rounded-xl p-4 border-4 border-yellow-400 shadow-2xl">

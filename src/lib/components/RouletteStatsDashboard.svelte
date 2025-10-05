@@ -12,7 +12,8 @@
     colorStats: { red: 0, black: 0, green: 0 },
     patternAnalysis: {},
     lastNumbers: [],
-    betAnalysis: {}
+    betAnalysis: {},
+    sectorAnalysis: {}
   };
 
   // 실시간 통계 업데이트
@@ -53,6 +54,40 @@
 
     // 베팅 분석
     analyzeBets();
+
+    // 섹터 분석
+    analyzeSectors(numbers);
+  }
+
+  function analyzeSectors(numbers) {
+    // 유럽식 룰렛 휠을 4개 섹터로 분할
+    const sectors = {
+      sector1: [0, 32, 15, 19, 4, 21, 2, 25, 17], // 0 주변
+      sector2: [34, 6, 27, 13, 36, 11, 30, 8, 23], // 34 주변
+      sector3: [10, 5, 24, 16, 33, 1, 20, 14, 31], // 10 주변
+      sector4: [9, 22, 18, 29, 7, 28, 12, 35, 3, 26] // 9 주변
+    };
+
+    const sectorCounts = {
+      sector1: 0,
+      sector2: 0,
+      sector3: 0,
+      sector4: 0
+    };
+
+    numbers.forEach(num => {
+      for (const [sector, nums] of Object.entries(sectors)) {
+        if (nums.includes(num)) {
+          sectorCounts[sector]++;
+          break;
+        }
+      }
+    });
+
+    statsData.sectorAnalysis = {
+      counts: sectorCounts,
+      total: numbers.length
+    };
   }
 
   function getAllNumbers() {
@@ -238,6 +273,29 @@
       </div>
     </div>
   </PastelCard>
+
+  <!-- 섹터 분석 -->
+  {#if statsData.sectorAnalysis.total > 0}
+  <PastelCard>
+    <h3 class="font-bold text-lg mb-3 text-center">🎯 휠 섹터 분석</h3>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      {#each Object.entries(statsData.sectorAnalysis.counts || {}) as [sector, count], index}
+        <div class="text-center">
+          <div class="w-16 h-16 mx-auto mb-2 rounded-full flex items-center justify-center font-bold text-white text-lg
+            {index === 0 ? 'bg-purple-500' : index === 1 ? 'bg-blue-500' : index === 2 ? 'bg-green-500' : 'bg-orange-500'}">
+            {count}
+          </div>
+          <div class="text-sm font-semibold">
+            섹터 {index + 1}
+          </div>
+          <div class="text-xs text-gray-500">
+            {formatPercentage(count, statsData.sectorAnalysis.total)}
+          </div>
+        </div>
+      {/each}
+    </div>
+  </PastelCard>
+  {/if}
 
   <!-- 최근 결과 트렌드 -->
   {#if statsData.lastNumbers.length > 0}
