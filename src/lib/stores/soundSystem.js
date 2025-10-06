@@ -354,6 +354,97 @@ class SoundGenerator {
       }, i * 50);
     }
   }
+
+  // 룰렛 스핀 사운드
+  async playRouletteSpin() {
+    if (!this.isInitialized) await this.initialize();
+    if (!this.audioContext) return;
+
+    let settings;
+    soundSettings.subscribe(s => settings = s)();
+    if (!settings.enabled) return;
+
+    // 회전 소리 (낮은 주파수 떨림)
+    const duration = 3.5;
+    const oscillator = this.audioContext.createOscillator();
+    const gainNode = this.audioContext.createGain();
+    const lfo = this.audioContext.createOscillator();
+    const lfoGain = this.audioContext.createGain();
+
+    lfo.connect(lfoGain);
+    lfoGain.connect(oscillator.frequency);
+    oscillator.connect(gainNode);
+    gainNode.connect(this.effectsGain);
+
+    oscillator.frequency.setValueAtTime(80, this.audioContext.currentTime);
+    lfo.frequency.setValueAtTime(10, this.audioContext.currentTime);
+    lfo.frequency.exponentialRampToValueAtTime(2, this.audioContext.currentTime + duration);
+    lfoGain.gain.setValueAtTime(20, this.audioContext.currentTime);
+
+    gainNode.gain.setValueAtTime(0.3, this.audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + duration);
+
+    oscillator.start(this.audioContext.currentTime);
+    lfo.start(this.audioContext.currentTime);
+    oscillator.stop(this.audioContext.currentTime + duration);
+    lfo.stop(this.audioContext.currentTime + duration);
+  }
+
+  // 룰렛 공 튕김 사운드
+  async playRouletteBounce() {
+    if (!this.isInitialized) await this.initialize();
+    if (!this.audioContext) return;
+
+    let settings;
+    soundSettings.subscribe(s => settings = s)();
+    if (!settings.enabled) return;
+
+    // 공 튕기는 소리 (여러 번의 짧은 클릭)
+    for (let i = 0; i < 8; i++) {
+      setTimeout(() => {
+        const oscillator = this.audioContext.createOscillator();
+        const gainNode = this.audioContext.createGain();
+
+        oscillator.connect(gainNode);
+        gainNode.connect(this.effectsGain);
+
+        oscillator.frequency.setValueAtTime(800 + Math.random() * 400, this.audioContext.currentTime);
+        oscillator.type = 'square';
+
+        const volume = 0.15 * (1 - i / 10);
+        gainNode.gain.setValueAtTime(volume, this.audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.05);
+
+        oscillator.start(this.audioContext.currentTime);
+        oscillator.stop(this.audioContext.currentTime + 0.05);
+      }, i * 150 + Math.random() * 50);
+    }
+  }
+
+  // 룰렛 종료 사운드
+  async playRouletteFinal() {
+    if (!this.isInitialized) await this.initialize();
+    if (!this.audioContext) return;
+
+    let settings;
+    soundSettings.subscribe(s => settings = s)();
+    if (!settings.enabled) return;
+
+    const oscillator = this.audioContext.createOscillator();
+    const gainNode = this.audioContext.createGain();
+
+    oscillator.connect(gainNode);
+    gainNode.connect(this.effectsGain);
+
+    oscillator.frequency.setValueAtTime(600, this.audioContext.currentTime);
+    oscillator.frequency.exponentialRampToValueAtTime(400, this.audioContext.currentTime + 0.3);
+
+    gainNode.gain.setValueAtTime(0.2, this.audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.3);
+
+    oscillator.start(this.audioContext.currentTime);
+    oscillator.stop(this.audioContext.currentTime + 0.3);
+  }
 }
 
 // 전역 사운드 생성기 인스턴스
@@ -412,5 +503,8 @@ export const soundActions = {
   playLose: () => soundGenerator.playLose(),
   playBlackjack: () => soundGenerator.playBlackjack(),
   playButtonClick: () => soundGenerator.playButtonClick(),
-  playShuffle: () => soundGenerator.playShuffle()
+  playShuffle: () => soundGenerator.playShuffle(),
+  playRouletteSpin: () => soundGenerator.playRouletteSpin(),
+  playRouletteBounce: () => soundGenerator.playRouletteBounce(),
+  playRouletteFinal: () => soundGenerator.playRouletteFinal()
 };

@@ -1,4 +1,5 @@
 import { writable } from 'svelte/store';
+import { soundActions } from './soundSystem.js';
 
 // 룰렛 번호와 색상 정의
 const rouletteNumbers = [
@@ -55,6 +56,26 @@ function checkWin(betType, betValue, winningNumber) {
     case 'straight':
       return winningNumber === parseInt(betValue);
 
+    case 'split':
+      // betValue는 "1,2" 형식의 문자열
+      const splitNumbers = betValue.split(',').map(n => parseInt(n));
+      return splitNumbers.includes(winningNumber);
+
+    case 'street':
+      // betValue는 "1,2,3" 형식의 문자열
+      const streetNumbers = betValue.split(',').map(n => parseInt(n));
+      return streetNumbers.includes(winningNumber);
+
+    case 'corner':
+      // betValue는 "1,2,4,5" 형식의 문자열
+      const cornerNumbers = betValue.split(',').map(n => parseInt(n));
+      return cornerNumbers.includes(winningNumber);
+
+    case 'line':
+      // betValue는 "1,2,3,4,5,6" 형식의 문자열
+      const lineNumbers = betValue.split(',').map(n => parseInt(n));
+      return lineNumbers.includes(winningNumber);
+
     case 'red':
       return color === 'red';
 
@@ -91,6 +112,27 @@ function checkWin(betType, betValue, winningNumber) {
     case 'column3':
       return winningNumber > 0 && winningNumber % 3 === 0;
 
+    case 'neighbors':
+      // betValue는 "17,2" (중앙번호, 양옆개수) 형식
+      const [center, count] = betValue.split(',').map(n => parseInt(n));
+      const wheelOrder = rouletteNumbers.map(n => n.number);
+      const centerIndex = wheelOrder.indexOf(center);
+      const neighbors = [];
+      for (let i = -count; i <= count; i++) {
+        const idx = (centerIndex + i + wheelOrder.length) % wheelOrder.length;
+        neighbors.push(wheelOrder[idx]);
+      }
+      return neighbors.includes(winningNumber);
+
+    case 'voisins':
+      return frenchBets.voisins.includes(winningNumber);
+
+    case 'tiers':
+      return frenchBets.tiers.includes(winningNumber);
+
+    case 'orphelins':
+      return frenchBets.orphelins.includes(winningNumber);
+
     default:
       return false;
   }
@@ -99,6 +141,10 @@ function checkWin(betType, betValue, winningNumber) {
 // 베팅 타입별 배당률
 const payouts = {
   straight: 35,    // 스트레이트 업 (단일 번호)
+  split: 17,       // 스플릿 (2개 번호)
+  street: 11,      // 스트리트 (3개 번호)
+  corner: 8,       // 코너 (4개 번호)
+  line: 5,         // 라인 (6개 번호)
   red: 1,         // 빨강
   black: 1,       // 검정
   even: 1,        // 짝수
@@ -110,7 +156,18 @@ const payouts = {
   dozen3: 2,      // 25-36
   column1: 2,     // 첫 번째 세로줄
   column2: 2,     // 두 번째 세로줄
-  column3: 2      // 세 번째 세로줄
+  column3: 2,     // 세 번째 세로줄
+  neighbors: 35,  // 이웃 번호 (단일 번호와 동일)
+  voisins: 17,    // Voisins du Zero (0 주변)
+  tiers: 17,      // Tiers du Cylindre (휠 반대편)
+  orphelins: 35   // Orphelins (고아 번호들)
+};
+
+// 프렌치 베팅 정의
+const frenchBets = {
+  voisins: [0, 2, 3, 4, 7, 12, 15, 18, 19, 21, 22, 25, 26, 28, 29, 32, 35],
+  tiers: [5, 8, 10, 11, 13, 16, 23, 24, 27, 30, 33, 36],
+  orphelins: [1, 6, 9, 14, 17, 20, 31, 34]
 };
 
 // 게임 상태 초기값
@@ -136,7 +193,28 @@ const initialState = {
   history: [],
 
   // 메시지
-  message: '베팅을 시작하세요!'
+  message: '베팅을 시작하세요!',
+
+  // 베팅 타이머
+  bettingTimeLimit: 30, // 초
+  bettingTimeRemaining: 30,
+  timerEnabled: false,
+  autoSpinEnabled: false,
+
+  // 즐겨찾기 베팅 패턴
+  favoriteBets: [],
+  lastBets: null,
+
+  // 자동 플레이
+  autoPlay: {
+    enabled: false,
+    spinsRemaining: 0,
+    totalSpins: 0,
+    stopOnWin: false,
+    stopOnLoss: false,
+    maxLoss: 0,
+    maxWin: 0
+  }
 };
 
 export const rouletteStore = writable(initialState);
@@ -165,6 +243,9 @@ export const rouletteActions = {
       }
 
       newBets[betKey].amount += amount;
+
+      // 베팅 사운드 재생
+      soundActions?.playChipBet();
 
       return {
         ...state,
@@ -214,6 +295,9 @@ export const rouletteActions = {
 
       const spinDuration = 3000 + Math.random() * 2000; // 3-5초
 
+      // 스핀 사운드 재생
+      soundActions?.playRouletteSpin();
+
       return {
         ...state,
         gameState: 'spinning',
@@ -221,9 +305,15 @@ export const rouletteActions = {
         wheelRotation: finalRotation,
         spinDuration,
         winningNumber,
+        lastBets: { ...state.bets }, // 마지막 베팅 저장
         message: '룰렛이 돌아가고 있습니다...'
       };
     });
+
+    // 공 튕김 사운드 (2.5초 후)
+    setTimeout(() => {
+      soundActions?.playRouletteBounce();
+    }, 2500);
 
     // 스핀 완료 후 결과 처리
     setTimeout(() => {
@@ -264,6 +354,18 @@ export const rouletteActions = {
       const color = numberColors[state.winningNumber];
       const colorText = color === 'red' ? '빨강' : color === 'black' ? '검정' : '초록';
 
+      // 종료 사운드 재생
+      soundActions?.playRouletteFinal();
+
+      // 승리/패배 사운드 재생 (0.3초 후)
+      setTimeout(() => {
+        if (totalWinnings > 0) {
+          soundActions?.playWin();
+        } else {
+          soundActions?.playLose();
+        }
+      }, 300);
+
       return {
         ...state,
         gameState: 'finished',
@@ -278,7 +380,10 @@ export const rouletteActions = {
   // 새 게임 시작
   newGame() {
     rouletteStore.update(state => {
-      return {
+      // 자동 플레이 조건 체크
+      rouletteActions.checkAutoPlayConditions();
+
+      const newState = {
         ...state,
         gameState: 'betting',
         wheelRotation: state.wheelRotation, // 회전각도는 유지
@@ -288,12 +393,220 @@ export const rouletteActions = {
         bets: {},
         message: '새 게임을 시작하세요!'
       };
+
+      // 자동 플레이가 활성화되어 있고 lastBets가 있으면 자동으로 베팅 반복
+      if (state.autoPlay.enabled && state.autoPlay.spinsRemaining > 0 && state.lastBets) {
+        const totalAmount = Object.values(state.lastBets).reduce((sum, bet) => sum + bet.amount, 0);
+        if (state.balance >= totalAmount) {
+          newState.bets = { ...state.lastBets };
+          newState.balance = state.balance - totalAmount;
+
+          // 자동 스핀
+          setTimeout(() => rouletteActions.spin(), 1000);
+        } else {
+          newState.autoPlay = { ...state.autoPlay, enabled: false, spinsRemaining: 0 };
+          newState.message = '잔고 부족으로 자동 플레이가 중지되었습니다.';
+        }
+      }
+
+      return newState;
     });
   },
 
   // 게임 리셋 (잔고 초기화)
   resetGame() {
     rouletteStore.set(initialState);
+  },
+
+  // 타이머 설정
+  setTimerEnabled(enabled) {
+    rouletteStore.update(state => ({
+      ...state,
+      timerEnabled: enabled,
+      bettingTimeRemaining: enabled ? state.bettingTimeLimit : 30
+    }));
+  },
+
+  setAutoSpinEnabled(enabled) {
+    rouletteStore.update(state => ({
+      ...state,
+      autoSpinEnabled: enabled
+    }));
+  },
+
+  setBettingTimeLimit(seconds) {
+    rouletteStore.update(state => ({
+      ...state,
+      bettingTimeLimit: seconds,
+      bettingTimeRemaining: seconds
+    }));
+  },
+
+  startBettingTimer() {
+    rouletteStore.update(state => {
+      if (!state.timerEnabled || state.gameState !== 'betting') return state;
+
+      return {
+        ...state,
+        bettingTimeRemaining: state.bettingTimeLimit
+      };
+    });
+  },
+
+  decrementTimer() {
+    rouletteStore.update(state => {
+      if (!state.timerEnabled || state.gameState !== 'betting') return state;
+
+      const newTime = state.bettingTimeRemaining - 1;
+
+      if (newTime <= 0 && state.autoSpinEnabled && Object.keys(state.bets).length > 0) {
+        // 자동 스핀
+        setTimeout(() => rouletteActions.spin(), 100);
+      }
+
+      return {
+        ...state,
+        bettingTimeRemaining: Math.max(0, newTime)
+      };
+    });
+  },
+
+  // 즐겨찾기 베팅 패턴
+  saveFavoriteBet(name) {
+    rouletteStore.update(state => {
+      const totalBets = Object.values(state.bets).reduce((sum, bet) => sum + bet.amount, 0);
+      if (totalBets === 0) return state;
+
+      const favorite = {
+        id: Date.now(),
+        name,
+        bets: { ...state.bets },
+        totalAmount: totalBets,
+        createdAt: new Date()
+      };
+
+      return {
+        ...state,
+        favoriteBets: [...state.favoriteBets, favorite]
+      };
+    });
+  },
+
+  loadFavoriteBet(favoriteId) {
+    rouletteStore.update(state => {
+      const favorite = state.favoriteBets.find(f => f.id === favoriteId);
+      if (!favorite || state.gameState !== 'betting') return state;
+
+      const totalAmount = Object.values(favorite.bets).reduce((sum, bet) => sum + bet.amount, 0);
+      if (state.balance < totalAmount) {
+        return { ...state, message: '잔고가 부족합니다!' };
+      }
+
+      return {
+        ...state,
+        bets: { ...favorite.bets },
+        balance: state.balance - totalAmount,
+        message: `'${favorite.name}' 패턴을 불러왔습니다.`
+      };
+    });
+  },
+
+  deleteFavoriteBet(favoriteId) {
+    rouletteStore.update(state => ({
+      ...state,
+      favoriteBets: state.favoriteBets.filter(f => f.id !== favoriteId)
+    }));
+  },
+
+  repeatLastBet() {
+    rouletteStore.update(state => {
+      if (!state.lastBets || state.gameState !== 'betting') return state;
+
+      const totalAmount = Object.values(state.lastBets).reduce((sum, bet) => sum + bet.amount, 0);
+      if (state.balance < totalAmount) {
+        return { ...state, message: '잔고가 부족합니다!' };
+      }
+
+      return {
+        ...state,
+        bets: { ...state.lastBets },
+        balance: state.balance - totalAmount,
+        message: '이전 베팅을 반복했습니다.'
+      };
+    });
+  },
+
+  // 자동 플레이
+  startAutoPlay(spins, options = {}) {
+    rouletteStore.update(state => ({
+      ...state,
+      autoPlay: {
+        enabled: true,
+        spinsRemaining: spins,
+        totalSpins: spins,
+        stopOnWin: options.stopOnWin || false,
+        stopOnLoss: options.stopOnLoss || false,
+        maxLoss: options.maxLoss || 0,
+        maxWin: options.maxWin || 0
+      }
+    }));
+
+    // 첫 스핀 시작
+    if (Object.keys(rouletteStore.bets || {}).length > 0) {
+      setTimeout(() => rouletteActions.spin(), 500);
+    }
+  },
+
+  stopAutoPlay() {
+    rouletteStore.update(state => ({
+      ...state,
+      autoPlay: {
+        ...state.autoPlay,
+        enabled: false,
+        spinsRemaining: 0
+      }
+    }));
+  },
+
+  checkAutoPlayConditions() {
+    rouletteStore.update(state => {
+      if (!state.autoPlay.enabled || state.gameState !== 'finished') return state;
+
+      const lastGame = state.history[0];
+
+      // 중지 조건 체크
+      if (state.autoPlay.stopOnWin && lastGame?.netResult > 0) {
+        return {
+          ...state,
+          autoPlay: { ...state.autoPlay, enabled: false, spinsRemaining: 0 },
+          message: '승리로 자동 플레이가 중지되었습니다.'
+        };
+      }
+
+      if (state.autoPlay.stopOnLoss && lastGame?.netResult < 0) {
+        return {
+          ...state,
+          autoPlay: { ...state.autoPlay, enabled: false, spinsRemaining: 0 },
+          message: '패배로 자동 플레이가 중지되었습니다.'
+        };
+      }
+
+      // 스핀 카운트 감소
+      const spinsRemaining = state.autoPlay.spinsRemaining - 1;
+
+      if (spinsRemaining <= 0) {
+        return {
+          ...state,
+          autoPlay: { ...state.autoPlay, enabled: false, spinsRemaining: 0 },
+          message: '자동 플레이가 완료되었습니다.'
+        };
+      }
+
+      return {
+        ...state,
+        autoPlay: { ...state.autoPlay, spinsRemaining }
+      };
+    });
   }
 };
 
