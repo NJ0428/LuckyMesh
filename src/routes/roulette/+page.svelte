@@ -7,6 +7,9 @@
   import BettingPatternAnalysis from '$lib/components/BettingPatternAnalysis.svelte';
   import GameHistoryVisualization from '$lib/components/GameHistoryVisualization.svelte';
   import StrategyGuide from '$lib/components/StrategyGuide.svelte';
+  import BettingTimer from '$lib/components/BettingTimer.svelte';
+  import CoinFountain from '$lib/components/CoinFountain.svelte';
+  import ChipAnimation from '$lib/components/ChipAnimation.svelte';
   import PastelCard from '$lib/components/PastelCard.svelte';
   import PastelButton from '$lib/components/PastelButton.svelte';
 
@@ -18,10 +21,46 @@
   let gameState;
   let selectedBetAmount = 100;
   let showRules = false;
+  let showFavoritesModal = false;
+  let newFavoriteName = '';
+  let showCoinFountain = false;
+  let winAmount = 0;
+
+  // 타이머 관련
+  let timerInterval;
+  $: if (gameState.timerEnabled && gameState.gameState === 'betting') {
+    if (!timerInterval) {
+      timerInterval = setInterval(() => {
+        rouletteActions.decrementTimer();
+      }, 1000);
+    }
+  } else {
+    if (timerInterval) {
+      clearInterval(timerInterval);
+      timerInterval = null;
+    }
+  }
 
   $: gameState = $rouletteStore;
 
   const betOptions = [10, 25, 50, 100, 250, 500];
+
+  // 승리 시 코인 분수 표시
+  let processedGameId = null;
+  $: if (gameState.gameState === 'finished' && gameState.history.length > 0) {
+    const currentGameId = gameState.history[0]?.timestamp;
+    if (currentGameId && currentGameId !== processedGameId) {
+      processedGameId = currentGameId;
+      const game = gameState.history[0];
+      if (game.netResult > 0) {
+        winAmount = game.totalWinnings;
+        showCoinFountain = true;
+        setTimeout(() => {
+          showCoinFountain = false;
+        }, 3000);
+      }
+    }
+  }
 
   function formatCurrency(amount) {
     return new Intl.NumberFormat('ko-KR', {
@@ -118,6 +157,17 @@
             </div>
           {/if}
 
+          <!-- 베팅 타이머 -->
+          {#if gameState.timerEnabled && gameState.gameState === 'betting'}
+            <div class="mb-4">
+              <BettingTimer
+                timeRemaining={gameState.bettingTimeRemaining}
+                maxTime={gameState.bettingTimeLimit}
+                isActive={gameState.gameState === 'betting'}
+              />
+            </div>
+          {/if}
+
           <!-- 게임 컨트롤 -->
           <div class="flex flex-wrap justify-center gap-4">
             {#if gameState.gameState === 'betting'}
@@ -135,6 +185,22 @@
                   on:click={rouletteActions.clearBets}
                 >
                   베팅 취소
+                </PastelButton>
+
+                <PastelButton
+                  variant="secondary"
+                  on:click={() => showFavoritesModal = true}
+                >
+                  즐겨찾기 저장
+                </PastelButton>
+              {/if}
+
+              {#if gameState.lastBets}
+                <PastelButton
+                  variant="secondary"
+                  on:click={rouletteActions.repeatLastBet}
+                >
+                  이전 베팅 반복
                 </PastelButton>
               {/if}
 
@@ -198,6 +264,39 @@
       </PastelButton>
     </div>
 
+    <!-- 프렌치 베팅 (사이드 베팅) -->
+    <div class="mt-6">
+      <PastelCard>
+        <h3 class="font-bold text-lg mb-4 text-center text-black">🇫🇷 프렌치 베팅</h3>
+        <div class="grid grid-cols-3 gap-3">
+          <PastelButton
+            size="sm"
+            variant="secondary"
+            on:click={() => rouletteActions.placeBet('voisins', null, selectedBetAmount)}
+            disabled={gameState.gameState !== 'betting'}
+          >
+            Voisins
+          </PastelButton>
+          <PastelButton
+            size="sm"
+            variant="secondary"
+            on:click={() => rouletteActions.placeBet('tiers', null, selectedBetAmount)}
+            disabled={gameState.gameState !== 'betting'}
+          >
+            Tiers
+          </PastelButton>
+          <PastelButton
+            size="sm"
+            variant="secondary"
+            on:click={() => rouletteActions.placeBet('orphelins', null, selectedBetAmount)}
+            disabled={gameState.gameState !== 'betting'}
+          >
+            Orphelins
+          </PastelButton>
+        </div>
+      </PastelCard>
+    </div>
+
     <!-- 실시간 통계 대시보드 -->
     {#if showStatsDashboard}
       <div class="mb-6">
@@ -255,7 +354,7 @@
       <!-- 베팅 금액 선택 -->
       <PastelCard>
         <h3 class="font-bold text-lg mb-4 text-center text-black">베팅 금액</h3>
-        <div class="grid grid-cols-2 gap-2">
+        <div class="grid grid-cols-2 gap-2 mb-4">
           {#each betOptions as amount}
             <button
               on:click={() => selectedBetAmount = amount}
@@ -264,6 +363,62 @@
               {formatCurrency(amount)}
             </button>
           {/each}
+        </div>
+
+        <!-- 타이머 설정 -->
+        <div class="mt-4 pt-4 border-t border-gray-200">
+          <label class="flex items-center justify-between mb-2">
+            <span class="text-sm font-semibold text-black">베팅 타이머</span>
+            <input
+              type="checkbox"
+              checked={gameState.timerEnabled}
+              on:change={(e) => rouletteActions.setTimerEnabled(e.target.checked)}
+              class="w-5 h-5 text-primary-soft-pink rounded focus:ring-primary-soft-pink"
+            />
+          </label>
+          {#if gameState.timerEnabled}
+            <label class="flex items-center justify-between">
+              <span class="text-sm font-semibold text-black">자동 스핀</span>
+              <input
+                type="checkbox"
+                checked={gameState.autoSpinEnabled}
+                on:change={(e) => rouletteActions.setAutoSpinEnabled(e.target.checked)}
+                class="w-5 h-5 text-primary-soft-pink rounded focus:ring-primary-soft-pink"
+              />
+            </label>
+          {/if}
+        </div>
+
+        <!-- 자동 플레이 -->
+        <div class="mt-4 pt-4 border-t border-gray-200">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-sm font-semibold text-black">자동 플레이</span>
+            {#if gameState.autoPlay.enabled}
+              <span class="text-xs text-primary-soft-pink font-bold">
+                {gameState.autoPlay.spinsRemaining} / {gameState.autoPlay.totalSpins}
+              </span>
+            {/if}
+          </div>
+          {#if !gameState.autoPlay.enabled}
+            <button
+              on:click={() => {
+                if (gameState.lastBets) {
+                  rouletteActions.startAutoPlay(10);
+                }
+              }}
+              disabled={!gameState.lastBets || gameState.gameState !== 'betting'}
+              class="w-full text-xs bg-primary-soft-purple hover:bg-primary-soft-pink text-black font-bold py-2 px-3 rounded-lg transition-all disabled:opacity-50"
+            >
+              10회 자동
+            </button>
+          {:else}
+            <button
+              on:click={() => rouletteActions.stopAutoPlay()}
+              class="w-full text-xs bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-3 rounded-lg transition-all"
+            >
+              중지
+            </button>
+          {/if}
         </div>
       </PastelCard>
 
@@ -378,5 +533,76 @@
         </div>
       </div>
     </div>
+  {/if}
+
+  <!-- 즐겨찾기 저장 모달 -->
+  {#if showFavoritesModal}
+    <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" on:click={() => showFavoritesModal = false}>
+      <div class="bg-white rounded-xl p-6 max-w-md w-full text-black" on:click|stopPropagation>
+        <h3 class="text-xl font-bold mb-4">베팅 패턴 저장</h3>
+        <input
+          type="text"
+          bind:value={newFavoriteName}
+          placeholder="패턴 이름을 입력하세요"
+          class="w-full px-4 py-2 border border-gray-300 rounded-lg mb-4 focus:outline-none focus:border-primary-soft-pink"
+        />
+        <div class="flex gap-2">
+          <button
+            on:click={() => {
+              if (newFavoriteName.trim()) {
+                rouletteActions.saveFavoriteBet(newFavoriteName.trim());
+                newFavoriteName = '';
+                showFavoritesModal = false;
+              }
+            }}
+            class="flex-1 bg-primary-soft-pink hover:bg-primary-soft-peach text-black font-bold py-2 px-4 rounded-lg transition-all"
+          >
+            저장
+          </button>
+          <button
+            on:click={() => {
+              showFavoritesModal = false;
+              newFavoriteName = '';
+            }}
+            class="flex-1 bg-gray-300 hover:bg-gray-400 text-black font-bold py-2 px-4 rounded-lg transition-all"
+          >
+            취소
+          </button>
+        </div>
+      </div>
+    </div>
+  {/if}
+
+  <!-- 즐겨찾기 목록 -->
+  {#if gameState.favoriteBets.length > 0}
+    <div class="fixed right-4 top-1/2 transform -translate-y-1/2 z-40">
+      <PastelCard>
+        <h4 class="font-bold mb-2 text-sm text-black">즐겨찾기</h4>
+        <div class="space-y-2 max-h-96 overflow-y-auto">
+          {#each gameState.favoriteBets as favorite}
+            <div class="flex items-center gap-2 p-2 bg-white/50 rounded">
+              <button
+                on:click={() => rouletteActions.loadFavoriteBet(favorite.id)}
+                disabled={gameState.gameState !== 'betting'}
+                class="flex-1 text-left text-sm font-semibold text-black hover:bg-primary-soft-mint rounded px-2 py-1 disabled:opacity-50"
+              >
+                {favorite.name}
+              </button>
+              <button
+                on:click={() => rouletteActions.deleteFavoriteBet(favorite.id)}
+                class="text-red-500 hover:text-red-700 text-xs"
+              >
+                ✕
+              </button>
+            </div>
+          {/each}
+        </div>
+      </PastelCard>
+    </div>
+  {/if}
+
+  <!-- 코인 분수 애니메이션 -->
+  {#if showCoinFountain}
+    <CoinFountain amount={winAmount} />
   {/if}
 </div>
