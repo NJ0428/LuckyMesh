@@ -55,7 +55,7 @@
       <div class="flex items-center space-x-2">
         <span class="text-2xl">🌸</span>
         <a href="/" class="font-playfair font-bold text-xl pastel-gradient-text">
-          LuckyMesh Casino
+          럭키메시 카지노
         </a>
       </div>
 

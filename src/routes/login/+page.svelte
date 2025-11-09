@@ -54,8 +54,8 @@
 </script>
 
 <svelte:head>
-  <title>로그인 - LuckyMesh Casino</title>
-  <meta name="description" content="LuckyMesh Casino에 로그인하여 최고의 카지노 게임을 즐겨보세요." />
+  <title>로그인 - 럭키메시 카지노</title>
+  <meta name="description" content="럭키메시 카지노에 로그인하여 최고의 카지노 게임을 즐겨보세요." />
 </svelte:head>
 
 <div class="min-h-screen bg-gradient-to-br from-casino-dark via-gray-900 to-black">
@@ -68,7 +68,7 @@
           <!-- 카지노 아이콘들 -->
           <div class="text-8xl mb-8 animate-bounce">🎰</div>
           <h1 class="text-6xl font-bold text-casino-gold text-glow mb-6">
-            LuckyMesh
+            럭키메시
           </h1>
           <p class="text-2xl text-white font-light mb-8">
             최고의 온라인 카지노 경험
@@ -99,7 +99,7 @@
     <!-- 로고 및 헤더 -->
     <div class="text-center">
       <a href="/" class="text-4xl font-bold text-casino-gold text-glow">
-        🎰 LuckyMesh
+        🎰 럭키메시
       </a>
       <h2 class="mt-6 text-3xl font-bold text-white">
         계정에 로그인하세요
