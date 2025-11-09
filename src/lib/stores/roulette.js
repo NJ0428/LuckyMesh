@@ -223,11 +223,8 @@ export const rouletteStore = writable(initialState);
 export const rouletteActions = {
   // 베팅
   placeBet(betType, betValue, amount) {
-    console.log('rouletteActions.placeBet 호출됨:', { betType, betValue, amount });
     rouletteStore.update(state => {
-      console.log('현재 상태:', { gameState: state.gameState, balance: state.balance });
       if (state.gameState !== 'betting' || state.balance < amount) {
-        console.log('베팅 불가 조건:', { gameState: state.gameState, balance: state.balance, amount });
         return state;
       }
 
@@ -318,7 +315,7 @@ export const rouletteActions = {
     // 스핀 완료 후 결과 처리
     setTimeout(() => {
       rouletteActions.finishSpin();
-    }, 4000); // 4초 후 결과 처리
+    }, spinDuration); // spinDuration 후에 결과 처리
   },
 
   // 스핀 완료 처리
@@ -330,7 +327,7 @@ export const rouletteActions = {
       const winResults = [];
 
       // 각 베팅 체크
-      Object.entries(state.bets).forEach(([betKey, bet]) => {
+      Object.entries(state.bets).forEach(([, bet]) => {
         const isWin = checkWin(bet.type, bet.value, state.winningNumber);
         if (isWin) {
           const payout = payouts[bet.type];
@@ -538,21 +535,25 @@ export const rouletteActions = {
 
   // 자동 플레이
   startAutoPlay(spins, options = {}) {
-    rouletteStore.update(state => ({
-      ...state,
-      autoPlay: {
-        enabled: true,
-        spinsRemaining: spins,
-        totalSpins: spins,
-        stopOnWin: options.stopOnWin || false,
-        stopOnLoss: options.stopOnLoss || false,
-        maxLoss: options.maxLoss || 0,
-        maxWin: options.maxWin || 0
-      }
-    }));
+    let hasBets = false;
+    rouletteStore.update(state => {
+      hasBets = Object.keys(state.bets || {}).length > 0;
+      return {
+        ...state,
+        autoPlay: {
+          enabled: true,
+          spinsRemaining: spins,
+          totalSpins: spins,
+          stopOnWin: options.stopOnWin || false,
+          stopOnLoss: options.stopOnLoss || false,
+          maxLoss: options.maxLoss || 0,
+          maxWin: options.maxWin || 0
+        }
+      };
+    });
 
     // 첫 스핀 시작
-    if (Object.keys(rouletteStore.bets || {}).length > 0) {
+    if (hasBets) {
       setTimeout(() => rouletteActions.spin(), 500);
     }
   },
