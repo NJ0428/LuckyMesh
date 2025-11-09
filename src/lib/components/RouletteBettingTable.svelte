@@ -6,12 +6,8 @@
   export let bets;
   export let selectedBetAmount;
 
-  console.log('RouletteBettingTable props:', { gameState, bets, selectedBetAmount });
-
   function placeBet(betType, betValue = null) {
-    console.log('placeBet 호출됨:', { betType, betValue, gameState, selectedBetAmount });
     if (gameState !== 'betting') {
-      console.log('게임 상태가 betting이 아님:', gameState);
       return;
     }
     rouletteActions.placeBet(betType, betValue, selectedBetAmount);
@@ -73,16 +69,6 @@
 </script>
 
 <div class="bg-gradient-to-br from-green-800 to-green-900 rounded-xl p-4 border-4 border-yellow-400 shadow-2xl">
-  <!-- 디버깅용 테스트 버튼 -->
-  <div class="mb-4 p-2 bg-red-500 text-white text-center">
-    <button
-      on:click={() => console.log('테스트 버튼 작동함!')}
-      class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-    >
-      테스트 버튼 (클릭 확인용)
-    </button>
-    <p class="mt-2 text-sm">게임상태: {gameState} | 베팅금액: {selectedBetAmount}</p>
-  </div>
   <!-- 0 베팅 영역 -->
   <div class="mb-4">
     <button
@@ -105,10 +91,7 @@
       {#each row as number}
         {@const color = numberColors[number]}
         <button
-          on:click={() => {
-            console.log('번호 버튼 클릭됨:', number);
-            placeBet('straight', number.toString());
-          }}
+          on:click={() => placeBet('straight', number.toString())}
           disabled={gameState !== 'betting'}
           class="h-12 text-white font-bold text-sm border border-yellow-300 transition-all disabled:opacity-50 disabled:cursor-not-allowed relative cursor-pointer
             {color === 'red' ? 'bg-red-600 hover:bg-red-500' : 'bg-gray-800 hover:bg-gray-700'}"
@@ -172,10 +155,7 @@
     </button>
 
     <button
-      on:click={() => {
-        console.log('RED 버튼 클릭됨');
-        placeBet('red');
-      }}
+      on:click={() => placeBet('red')}
       disabled={gameState !== 'betting'}
       class="h-12 bg-red-600 hover:bg-red-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold text-sm rounded border-2 border-yellow-300 transition-all relative"
     >
