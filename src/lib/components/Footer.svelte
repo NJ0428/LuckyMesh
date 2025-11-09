@@ -36,7 +36,7 @@
         <div class="flex items-center space-x-2 mb-4">
           <span class="text-2xl">🌸</span>
           <span class="font-playfair font-bold text-xl pastel-gradient-text">
-            LuckyMesh Casino
+            럭키메시 카지노
           </span>
         </div>
         <p class="text-gray-600 text-sm mb-4 font-poppins">
@@ -105,7 +105,7 @@
     <div class="mt-8 pt-6 border-t border-white/20">
       <div class="flex flex-col sm:flex-row justify-between items-center">
         <p class="text-gray-600 text-sm font-poppins">
-          © {currentYear} LuckyMesh Casino. 모든 권리 보유.
+          © {currentYear} 럭키메시 카지노. 모든 권리 보유.
         </p>
         <div class="mt-2 sm:mt-0 flex items-center text-sm text-gray-500">
           <span class="mr-2">🌸</span>

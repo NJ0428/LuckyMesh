@@ -17,7 +17,7 @@
 </script>
 
 <svelte:head>
-  <title>LuckyMesh Casino - 프리미엄 온라인 카지노</title>
+  <title>럭키메시 카지노 - 프리미엄 온라인 카지노</title>
   <meta name="description" content="블랙잭, 바카라, 룰렛 등 최고의 카지노 게임을 경험하세요. 안전하고 공정한 게임 환경을 제공합니다." />
 </svelte:head>
 
@@ -30,7 +30,7 @@
     <div class="mb-8">
       <h1 class="text-6xl md:text-8xl font-playfair font-bold mb-6">
         <span class="pastel-gradient-text">
-          🌸 LuckyMesh Casino
+          🌸 럭키메시 카지노
         </span>
       </h1>
       <p class="text-2xl md:text-3xl text-gray-600 mb-8 font-poppins">
@@ -144,7 +144,7 @@
       <div>
         <h2 class="text-4xl font-playfair font-bold pastel-gradient-text mb-6">안전하고 공정한 게임</h2>
         <p class="text-xl text-gray-600 mb-8 font-poppins">
-          LuckyMesh Casino는 플레이어의 안전과 공정한 게임 환경을 최우선으로 생각합니다.
+          럭키메시 카지노는 플레이어의 안전과 공정한 게임 환경을 최우선으로 생각합니다.
           모든 게임은 엄격한 검증을 통과하였으며, 개인정보는 최고 수준의 보안으로 보호됩니다.
         </p>
 
