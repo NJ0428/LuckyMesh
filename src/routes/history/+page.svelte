@@ -178,7 +178,7 @@
 </script>
 
 <svelte:head>
-  <title>게임 기록 - LuckyMesh Casino</title>
+  <title>게임 기록 - 럭키메시 카지노</title>
   <meta name="description" content="나의 게임 기록과 통계를 확인하세요." />
 </svelte:head>
 

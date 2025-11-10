@@ -108,7 +108,7 @@
 </script>
 
 <svelte:head>
-  <title>바카라 게임 - LuckyMesh Casino</title>
+  <title>바카라 게임 - 럭키메시 카지노</title>
   <meta name="description" content="실시간 바카라 게임을 플레이하세요. 플레이어, 뱅커, 타이 베팅과 사이드 베팅으로 더 큰 재미를 경험해보세요." />
 </svelte:head>
 
