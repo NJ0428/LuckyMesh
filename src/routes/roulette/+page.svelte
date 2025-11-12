@@ -84,7 +84,7 @@
 </script>
 
 <svelte:head>
-  <title>룰렛 게임 - LuckyMesh Casino</title>
+  <title>룰렛 게임 - 럭키메시 카지노</title>
   <meta name="description" content="실시간 룰렛 게임을 플레이하세요. 다양한 베팅 옵션과 높은 배당률로 카지노의 여왕을 경험해보세요!" />
 </svelte:head>
 
