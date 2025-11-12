@@ -379,7 +379,7 @@
 </script>
 
 <svelte:head>
-  <title>고급 블랙잭 게임 - LuckyMesh Casino</title>
+  <title>고급 블랙잭 게임 - 럭키메시 카지노</title>
   <meta name="description" content="전략 도우미, 멀티플레이어, 업적 시스템이 포함된 완전한 블랙잭 게임을 플레이하세요!" />
 </svelte:head>
 
