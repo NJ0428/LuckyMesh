@@ -136,8 +136,8 @@
 </script>
 
 <svelte:head>
-  <title>회원가입 - LuckyMesh Casino</title>
-  <meta name="description" content="LuckyMesh Casino에 가입하여 최고의 카지노 게임을 즐겨보세요. 신규 회원 특별 혜택을 놓치지 마세요!" />
+  <title>회원가입 - 럭키메시 카지노</title>
+  <meta name="description" content="럭키메시 카지노에 가입하여 최고의 카지노 게임을 즐겨보세요. 신규 회원 특별 혜택을 놓치지 마세요!" />
 </svelte:head>
 
 <div class="min-h-screen bg-gradient-to-br from-casino-dark via-gray-900 to-black">
@@ -197,7 +197,7 @@
     <!-- 로고 및 헤더 -->
     <div class="text-center mb-8">
       <a href="/" class="text-4xl font-bold text-casino-gold text-glow">
-        🎰 LuckyMesh
+        🎰 럭키메시
       </a>
       <h2 class="mt-6 text-3xl font-bold text-white">
         새로운 계정 만들기
