@@ -79,14 +79,14 @@
         <div class="flex items-center space-x-4">
           <div class="text-4xl">🎰</div>
           <div>
-            <h1 class="text-3xl font-bold font-playfair">슬롯머신</h1>
-            <p class="text-sm opacity-90">Lucky Slots - 행운의 릴을 돌려보세요</p>
+            <h1 class="text-3xl font-bold font-playfair text-black">슬롯머신</h1>
+            <p class="text-sm opacity-90 text-black">Lucky Slots - 행운의 릴을 돌려보세요</p>
           </div>
         </div>
 
         <div class="flex items-center space-x-4">
           <!-- 잔고 표시 -->
-          <div class="bg-white/80 backdrop-blur px-6 py-3 rounded-full shadow-lg">
+          <div class="bg-white/80 backdrop-blur px-6 py-3 rounded-full shadow-lg text-black">
             <div class="flex items-center space-x-2">
               <span class="text-2xl">💰</span>
               <div>
@@ -187,7 +187,7 @@
           <h3 class="font-bold text-lg mb-4 text-center text-black">최근 기록</h3>
           <div class="space-y-2 max-h-64 overflow-y-auto">
             {#if history.length === 0}
-              <div class="text-center text-sm opacity-70 py-4">
+              <div class="text-center text-sm opacity-70 py-4 text-black">
                 아직 게임 기록이 없습니다
               </div>
             {:else}
@@ -260,7 +260,7 @@
   <!-- 규칙 모달 -->
   {#if showRules}
     <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" on:click={() => showRules = false}>
-      <div class="bg-white rounded-2xl p-6 max-w-md w-full max-h-[80vh] overflow-y-auto" on:click|stopPropagation>
+      <div class="bg-white rounded-2xl p-6 max-w-md w-full max-h-[80vh] overflow-y-auto text-black" on:click|stopPropagation>
         <div class="flex justify-between items-center mb-4">
           <h3 class="text-xl font-bold font-playfair">🎰 게임 규칙</h3>
           <PastelButton variant="secondary" size="sm" on:click={() => showRules = false}>
@@ -316,7 +316,7 @@
   <!-- 통계 모달 -->
   {#if showStats}
     <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" on:click={() => showStats = false}>
-      <div class="bg-white rounded-2xl p-6 max-w-md w-full" on:click|stopPropagation>
+      <div class="bg-white rounded-2xl p-6 max-w-md w-full text-black" on:click|stopPropagation>
         <div class="flex justify-between items-center mb-4">
           <h3 class="text-xl font-bold font-playfair">📊 게임 통계</h3>
           <PastelButton variant="secondary" size="sm" on:click={() => showStats = false}>
