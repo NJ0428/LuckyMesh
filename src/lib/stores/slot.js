@@ -1,6 +1,6 @@
 import { writable } from 'svelte/store';
 
-export const slotStore = writable({
+export const initialState = {
   gameState: 'ready', // ready, spinning, finished
   balance: 10000,
   currentBet: 100,
@@ -38,7 +38,9 @@ export const slotStore = writable({
     currentStreak: 0,
     bestStreak: 0
   }
-});
+};
+
+export const slotStore = writable(initialState);
 
 // 슬롯 심볼 설정 (가중치 포함)
 export const SYMBOLS = [
