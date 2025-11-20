@@ -1,6 +1,7 @@
 <script>
   import { onMount } from 'svelte';
-  import { slotStore } from '../../lib/stores/slot.js';
+  import { get } from 'svelte/store';
+  import { slotStore, initialState } from '../../lib/stores/slot.js';
   import { fly, slide } from 'svelte/transition';
   import SlotMachine from '../../lib/components/SlotMachine.svelte';
   import PastelCard from '../../lib/components/PastelCard.svelte';
@@ -18,11 +19,13 @@
 
   // 페이지 로드 시 초기화
   onMount(() => {
-    slotStore.update(store => ({
-      ...store,
-      gameState: 'ready',
-      message: '베팅 금액을 선택하고 스핀 버튼을 누르세요!'
-    }));
+    const currentStore = get(slotStore);
+    slotStore.set({
+      ...initialState,
+      balance: currentStore.balance,
+      stats: currentStore.stats,
+      history: currentStore.history
+    });
   });
 
   function handleWin(amount, winningLines) {
