@@ -9,6 +9,9 @@
     background: linear-gradient(135deg, #FFE1E6 0%, #E8E1FF 25%, #E1FFF1 50%, #FFE8D1 75%, #D1E8FF 100%);
     min-height: 100vh;
   }
+  p {
+    color: black;
+  }
 }
 
 @layer components {
