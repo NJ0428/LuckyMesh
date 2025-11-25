@@ -1,0 +1,89 @@
+:root {
+    --background: oklch(0.0800 0.0200 240);
+    --foreground: oklch(0.9800 0.0100 60);
+    --card: oklch(0.1200 0.0300 240);
+    --card-foreground: oklch(0.9500 0.0200 60);
+    --popover: oklch(0.1000 0.0250 240);
+    --popover-foreground: oklch(0.9600 0.0150 60);
+    --primary: oklch(0.7500 0.2000 45);
+    --primary-foreground: oklch(0.0900 0.0200 240);
+    --secondary: oklch(0.6000 0.1500 120);
+    --secondary-foreground: oklch(0.9700 0.0100 60);
+    --muted: oklch(0.1500 0.0200 240);
+    --muted-foreground: oklch(0.7000 0.0150 60);
+    --accent: oklch(0.6500 0.1800 0);
+    --accent-foreground: oklch(0.0900 0.0200 240);
+    --destructive: oklch(0.6200 0.2200 15);
+    --destructive-foreground: oklch(0.9800 0.0100 60);
+    --border: oklch(0.2000 0.0300 240);
+    --input: oklch(0.1800 0.0250 240);
+    --ring: oklch(0.7500 0.2000 45);
+    --chart-1: oklch(0.7500 0.2000 45);
+    --chart-2: oklch(0.6000 0.1500 120);
+    --chart-3: oklch(0.6500 0.1800 0);
+    --chart-4: oklch(0.6200 0.2200 15);
+    --chart-5: oklch(0.5500 0.1600 300);
+    --sidebar: oklch(0.1000 0.0250 240);
+    --sidebar-foreground: oklch(0.9500 0.0200 60);
+    --sidebar-primary: oklch(0.7500 0.2000 45);
+    --sidebar-primary-foreground: oklch(0.0900 0.0200 240);
+    --sidebar-accent: oklch(0.6500 0.1800 0);
+    --sidebar-accent-foreground: oklch(0.0900 0.0200 240);
+    --sidebar-border: oklch(0.2000 0.0300 240);
+    --sidebar-ring: oklch(0.7500 0.2000 45);
+    --font-sans: 'Noto Sans KR', 'Roboto', sans-serif;
+    --font-serif: 'Noto Serif KR', 'Playfair Display', serif;
+    --font-mono: 'JetBrains Mono', 'Source Code Pro', monospace;
+    --radius: 0.5rem;
+    --shadow-2xs: 0 1px 2px 0px hsl(45 100% 50% / 0.15);
+    --shadow-xs: 0 1px 3px 0px hsl(45 100% 50% / 0.20);
+    --shadow-sm: 0 2px 4px 0px hsl(45 100% 50% / 0.25), 0 1px 2px -1px hsl(45 100% 50% / 0.25);
+    --shadow: 0 4px 6px 0px hsl(45 100% 50% / 0.30), 0 2px 4px -1px hsl(45 100% 50% / 0.30);
+    --shadow-md: 0 6px 8px 0px hsl(45 100% 50% / 0.35), 0 4px 6px -1px hsl(45 100% 50% / 0.35);
+    --shadow-lg: 0 8px 12px 0px hsl(45 100% 50% / 0.40), 0 6px 8px -1px hsl(45 100% 50% / 0.40);
+    --shadow-xl: 0 12px 16px 0px hsl(45 100% 50% / 0.45), 0 8px 12px -1px hsl(45 100% 50% / 0.45);
+    --shadow-2xl: 0 16px 24px 0px hsl(45 100% 50% / 0.50);
+    --tracking-normal: 0em;
+    --spacing: 0.25rem;
+
+    --radius-sm: calc(var(--radius) - 4px);
+    --radius-md: calc(var(--radius) - 2px);
+    --radius-lg: var(--radius);
+    --radius-xl: calc(var(--radius) + 4px);
+
+    /* Casino specific colors */
+    --casino-gold: oklch(0.7500 0.2000 45);
+    --casino-red: oklch(0.6200 0.2200 15);
+    --casino-green: oklch(0.6000 0.1500 120);
+    --casino-dark: oklch(0.0800 0.0200 240);
+}
+
+/* Custom casino styling */
+.casino-gradient {
+    background: linear-gradient(135deg, var(--casino-dark) 0%, oklch(0.1200 0.0300 240) 100%);
+}
+
+.gold-text {
+    color: var(--casino-gold);
+    text-shadow: 0 0 10px hsl(45 100% 50% / 0.3);
+}
+
+.poker-card {
+    background: linear-gradient(145deg, oklch(0.9800 0.0100 60) 0%, oklch(0.9200 0.0200 60) 100%);
+    border: 2px solid var(--casino-gold);
+    box-shadow: var(--shadow-lg);
+}
+
+.casino-button {
+    background: linear-gradient(135deg, var(--casino-gold) 0%, oklch(0.6500 0.1800 45) 100%);
+    color: var(--casino-dark);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    transition: all 0.3s ease;
+}
+
+.casino-button:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-xl);
+}
