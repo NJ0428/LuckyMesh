@@ -10,6 +10,7 @@
     { href: '/blackjack', label: '블랙잭', icon: '🃏' },
     { href: '/baccarat', label: '바카라', icon: '♠️' },
     { href: '/roulette', label: '룰렛', icon: '🎰' },
+    { href: '/poker', label: '포커', icon: '♥️' },
     { href: '/slots', label: '슬롯', icon: '🍒' }
   ];
 
