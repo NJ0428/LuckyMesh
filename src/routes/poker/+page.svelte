@@ -6,15 +6,41 @@
   import EnhancedPlayingCard from '$lib/components/EnhancedPlayingCard.svelte';
   import PokerTable from '$lib/components/PokerTable.svelte';
 
+  let showRules = false;
+  let showStrategy = false;
+  let currentStats = {
+    activePlayers: 1234,
+    todayGames: 5678,
+    averagePot: 45000,
+    maxWin: 2500000
+  };
+
   onMount(() => {
-    //
+    // 실시간 통계 업데이트 시뮬레이션
+    const interval = setInterval(() => {
+      currentStats.activePlayers += Math.floor(Math.random() * 10) - 5;
+      currentStats.todayGames += Math.floor(Math.random() * 5);
+      currentStats.averagePot += Math.floor(Math.random() * 1000) - 500;
+    }, 3000);
+
+    return () => clearInterval(interval);
   });
 
   function formatCurrency(amount) {
     return new Intl.NumberFormat('ko-KR', {
       style: 'currency',
-      currency: 'USD'
+      currency: 'KRW'
     }).format(amount);
+  }
+
+  function toggleRules() {
+    showRules = !showRules;
+    showStrategy = false;
+  }
+
+  function toggleStrategy() {
+    showStrategy = !showStrategy;
+    showRules = false;
   }
 
 </script>
@@ -28,28 +54,37 @@
   <!-- 게임 헤더 -->
   <div class="bg-gradient-to-r from-primary-soft-purple to-primary-soft-peach py-6">
     <div class="max-w-7xl mx-auto px-4">
-      <div class="flex justify-between items-center text-black">
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center text-black gap-4">
         <div class="flex items-center space-x-4">
-          <div class="text-4xl">♠️</div>
+          <div class="flex items-center space-x-2">
+            <span class="text-3xl">♠️</span>
+            <span class="text-3xl">♥️</span>
+          </div>
           <div>
             <h1 class="text-3xl font-bold font-playfair">텍사스 홀덤 포커</h1>
-            <p class="text-sm opacity-90">Texas Hold'em Poker</p>
+            <p class="text-sm opacity-90">RTP: 97.8% | 베팅 범위: ₩1,000 - ₩200,000</p>
           </div>
         </div>
 
-        <div class="flex items-center space-x-4">
+        <div class="flex flex-col md:flex-row items-start md:items-center space-y-2 md:space-y-0 md:space-x-4">
           <div class="text-center">
             <div class="text-2xl font-bold">{formatCurrency(10000)}</div>
             <div class="text-sm opacity-90">잔고</div>
           </div>
           <div class="flex gap-2">
-             <button
-              on:click={() => {}}
-              class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition-all text-black"
+            <button
+              on:click={toggleRules}
+              class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition-all text-black font-medium"
             >
-              게임 규칙
+              📖 게임 규칙
             </button>
-             <button
+            <button
+              on:click={toggleStrategy}
+              class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition-all text-black font-medium"
+            >
+              💡 전략 가이드
+            </button>
+            <button
               on:click={() => {}}
               class="bg-white/20 hover:bg-white/30 p-2 rounded-lg transition-all text-black"
               title="설정"
@@ -57,6 +92,30 @@
               ⚙️
             </button>
           </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 실시간 통계 바 -->
+  <div class="bg-black/10 backdrop-blur-sm py-3">
+    <div class="max-w-7xl mx-auto px-4">
+      <div class="flex flex-wrap justify-center md:justify-between items-center gap-4 text-sm">
+        <div class="flex items-center space-x-2">
+          <span class="text-green-600">🟢</span>
+          <span>현재 플레이어: <strong>{currentStats.activePlayers.toLocaleString()}명</strong></span>
+        </div>
+        <div class="flex items-center space-x-2">
+          <span>📊</span>
+          <span>오늘 게임 수: <strong>{currentStats.todayGames.toLocaleString()}게임</strong></span>
+        </div>
+        <div class="flex items-center space-x-2">
+          <span>💰</span>
+          <span>평균 팟: <strong>{formatCurrency(currentStats.averagePot)}</strong></span>
+        </div>
+        <div class="flex items-center space-x-2">
+          <span>🏆</span>
+          <span>최고 상금: <strong>{formatCurrency(currentStats.maxWin)}</strong></span>
         </div>
       </div>
     </div>
