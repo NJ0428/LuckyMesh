@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>포커 - LuckyMesh Casino</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=Noto+Serif+KR:wght@400;700&family=JetBrains+Mono:wght@400;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="poker_theme.css">
+    <style>
+        body {
+            font-family: var(--font-sans);
+            background: var(--background);
+            color: var(--foreground);
+            min-height: 100vh;
+        }
+
+        .animate-card-deal {
+            animation: cardDeal 0.8s ease-out forwards;
+        }
+
+        .animate-float {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .animate-glow {
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        .animate-counter {
+            animation: countUp 1.2s ease-out forwards;
+        }
+
+        @keyframes cardDeal {
+            from {
+                transform: translateX(-100px) translateY(-50px) rotate(-15deg);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0) translateY(0) rotate(0deg);
+                opacity: 1;
+            }
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        @keyframes glow {
+            from {
+                text-shadow: 0 0 10px hsl(45 100% 50% / 0.3);
+            }
+
+            to {
+                text-shadow: 0 0 20px hsl(45 100% 50% / 0.6), 0 0 30px hsl(45 100% 50% / 0.4);
+            }
+        }
+
+        @keyframes countUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .poker-suit {
+            font-size: 1.5rem;
+            margin: 0 0.5rem;
+        }
+
+        .spade {
+            color: #000;
+        }
+
+        .heart {
+            color: #dc2626;
+        }
+
+        .diamond {
+            color: #dc2626;
+        }
+
+        .club {
+            color: #000;
+        }
+    </style>
+</head>
+
+<body class="casino-gradient">
+    <!-- Header -->
+    <header class="bg-black/20 backdrop-blur-sm border-b border-casino-gold/30">
+        <div class="container mx-auto px-4 py-4">
+            <nav class="flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                    <div class="text-2xl">🎰</div>
+                    <h1 class="text-xl font-bold gold-text animate-glow">LuckyMesh Casino</h1>
+                </div>
+                <div class="flex space-x-6">
+                    <a href="#" class="text-white hover:text-casino-gold transition-colors">홈</a>
+                    <a href="#" class="text-casino-gold font-semibold">게임</a>
+                    <a href="#" class="text-white hover:text-casino-gold transition-colors">로그인</a>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8">
+        <!-- Hero Section -->
+        <section class="text-center mb-12 animate-card-deal">
+            <div class="flex justify-center items-center mb-4">
+                <span class="poker-suit spade">♠</span>
+                <h1 class="text-4xl md:text-6xl font-bold gold-text animate-glow mx-4">POKER</h1>
+                <span class="poker-suit heart">♥</span>
+            </div>
+            <p class="text-xl text-white/80 mb-2">텍사스 홀덤 포커</p>
+            <div class="flex justify-center items-center">
+                <span class="poker-suit diamond">♦</span>
+                <span class="poker-suit club">♣</span>
+            </div>
+        </section>
+
+        <!-- Game Info and Stats Grid -->
+        <div class="grid md:grid-cols-2 gap-8 mb-12">
+            <!-- Game Info Card -->
+            <div class="poker-card p-6 rounded-lg animate-card-deal" style="animation-delay: 0.2s;">
+                <h2 class="text-2xl font-bold gold-text mb-4 flex items-center">
+                    <i data-lucide="info" class="mr-2"></i>
+                    게임 정보
+                </h2>
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-700">RTP (환수율):</span>
+                        <span class="font-bold text-casino-green text-xl">97.8%</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-700">베팅 범위:</span>
+                        <span class="font-bold text-casino-gold">₩1,000 - ₩200,000</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-700">최대 플레이어:</span>
+                        <span class="font-bold">9명</span>
+                    </div>
+                    <button class="w-full casino-button py-3 px-6 rounded-lg mt-6 flex items-center justify-center">
+                        <i data-lucide="play" class="mr-2"></i>
+                        게임 시작하기
+                    </button>
+                </div>
+            </div>
+
+            <!-- Live Stats Card -->
+            <div class="poker-card p-6 rounded-lg animate-card-deal" style="animation-delay: 0.4s;">
+                <h2 class="text-2xl font-bold gold-text mb-4 flex items-center">
+                    <i data-lucide="trending-up" class="mr-2"></i>
+                    실시간 통계
+                </h2>
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center animate-counter" style="animation-delay: 0.6s;">
+                        <span class="text-gray-700">현재 플레이어:</span>
+                        <span class="font-bold text-casino-green text-xl">1,234명</span>
+                    </div>
+                    <div class="flex justify-between items-center animate-counter" style="animation-delay: 0.8s;">
+                        <span class="text-gray-700">오늘 게임 수:</span>
+                        <span class="font-bold text-casino-gold">5,678게임</span>
+                    </div>
+                    <div class="flex justify-between items-center animate-counter" style="animation-delay: 1s;">
+                        <span class="text-gray-700">평균 팟 사이즈:</span>
+                        <span class="font-bold text-casino-red">₩45,000</span>
+                    </div>
+                    <div class="flex justify-between items-center animate-counter" style="animation-delay: 1.2s;">
+                        <span class="text-gray-700">최고 상금:</span>
+                        <span class="font-bold text-casino-gold text-lg">₩2,500,000</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game Rules Section -->
+        <section class="poker-card p-8 rounded-lg mb-8 animate-card-deal" style="animation-delay: 0.6s;">
+            <h2 class="text-3xl font-bold gold-text mb-6 flex items-center">
+                <i data-lucide="book-open" class="mr-3"></i>
+                게임 규칙
+            </h2>
+
+            <div class="grid md:grid-cols-3 gap-6">
+                <div class="text-center">
+                    <div class="text-4xl mb-3">1️⃣</div>
+                    <h3 class="text-xl font-bold text-casino-gold mb-3">기본 규칙</h3>
+                    <ul class="text-left space-y-2 text-gray-700">
+                        <li>• 각 플레이어는 2장의 홀 카드를 받습니다</li>
+                        <li>• 5장의 커뮤니티 카드가 테이블에 공개됩니다</li>
+                        <li>• 7장 중 최고의 5장으로 핸드를 만듭니다</li>
+                    </ul>
+                </div>
+
+                <div class="text-center">
+                    <div class="text-4xl mb-3">2️⃣</div>
+                    <h3 class="text-xl font-bold text-casino-gold mb-3">베팅 라운드</h3>
+                    <ul class="text-left space-y-2 text-gray-700">
+                        <li>• <strong>프리플롭:</strong> 홀 카드 받은 후</li>
+                        <li>• <strong>플롭:</strong> 첫 3장 공개 후</li>
+                        <li>• <strong>턴:</strong> 4번째 카드 공개 후</li>
+                        <li>• <strong>리버:</strong> 마지막 카드 공개 후</li>
+                    </ul>
+                </div>
+
+                <div class="text-center">
+                    <div class="text-4xl mb-3">3️⃣</div>
+                    <h3 class="text-xl font-bold text-casino-gold mb-3">핸드 랭킹</h3>
+                    <ul class="text-left space-y-1 text-gray-700 text-sm">
+                        <li>1. 로얄 플러시</li>
+                        <li>2. 스트레이트 플러시</li>
+                        <li>3. 포카드</li>
+                        <li>4. 풀하우스</li>
+                        <li>5. 플러시</li>
+                        <li>6. 스트레이트</li>
+                        <li>7. 트리플</li>
+                        <li>8. 투페어</li>
+                        <li>9. 원페어</li>
+                        <li>10. 하이카드</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Strategy Guide Section -->
+        <section class="poker-card p-8 rounded-lg mb-8 animate-card-deal" style="animation-delay: 0.8s;">
+            <h2 class="text-3xl font-bold gold-text mb-6 flex items-center">
+                <i data-lucide="lightbulb" class="mr-3"></i>
+                전략 가이드
+            </h2>
+
+            <div class="grid md:grid-cols-2 gap-8">
+                <div>
+                    <h3 class="text-xl font-bold text-casino-gold mb-4">💡 초보자 팁</h3>
+                    <ul class="space-y-3 text-gray-700">
+                        <li class="flex items-start">
+                            <span class="text-casino-green mr-2">✓</span>
+                            <span>타이트한 플레이로 시작하세요 - 좋은 핸드만 플레이</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-casino-green mr-2">✓</span>
+                            <span>포지션의 중요성을 이해하세요 - 늦은 포지션이 유리</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-casino-green mr-2">✓</span>
+                            <span>상대방의 베팅 패턴을 관찰하세요</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-casino-green mr-2">✓</span>
+                            <span>감정적인 플레이(틸트)를 피하세요</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h3 class="text-xl font-bold text-casino-gold mb-4">🎯 고급 전략</h3>
+                    <ul class="space-y-3 text-gray-700">
+                        <li class="flex items-start">
+                            <span class="text-casino-red mr-2">⚡</span>
+                            <span>블러핑 타이밍을 익히세요</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-casino-red mr-2">⚡</span>
+                            <span>팟 오즈를 계산하여 콜/폴드 결정</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-casino-red mr-2">⚡</span>
+                            <span>상대방의 텔(tell)을 읽는 법 학습</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-casino-red mr-2">⚡</span>
+                            <span>뱅크롤 관리의 중요성</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Call to Action -->
+        <section class="text-center animate-card-deal" style="animation-delay: 1s;">
+            <div class="poker-card p-8 rounded-lg">
+                <h2 class="text-3xl font-bold gold-text mb-4">지금 포커 게임을 시작하세요!</h2>
+                <p class="text-gray-700 mb-6">전 세계 플레이어들과 함께 스릴 넘치는 포커 게임을 즐겨보세요.</p>
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <button
+                        class="casino-button py-4 px-8 rounded-lg text-lg flex items-center justify-center animate-float">
+                        <i data-lucide="play-circle" class="mr-2"></i>
+                        무료 체험하기
+                    </button>
+                    <button
+                        class="bg-casino-green hover:bg-casino-green/80 text-white py-4 px-8 rounded-lg text-lg transition-all duration-300 flex items-center justify-center">
+                        <i data-lucide="dollar-sign" class="mr-2"></i>
+                        실전 게임 시작
+                    </button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-black/30 backdrop-blur-sm border-t border-casino-gold/30 mt-16">
+        <div class="container mx-auto px-4 py-8 text-center">
+            <p class="text-white/60">© 2024 LuckyMesh Casino. 모든 권리 보유.</p>
+            <p class="text-white/40 text-sm mt-2">책임감 있는 게임을 즐기세요. 18세 이상만 이용 가능합니다.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        // Add interactive animations
+        document.addEventListener('DOMContentLoaded', function () {
+            // Animate counters
+            const counters = document.querySelectorAll('.animate-counter');
+            counters.forEach((counter, index) => {
+                setTimeout(() => {
+                    counter.style.opacity = '1';
+                    counter.style.transform = 'translateY(0)';
+                }, index * 200 + 600);
+            });
+
+            // Add hover effects to cards
+            const cards = document.querySelectorAll('.poker-card');
+            cards.forEach(card => {
+                card.addEventListener('mouseenter', function () {
+                    this.style.transform = 'translateY(-5px)';
+                    this.style.transition = 'transform 0.3s ease';
+                });
+
+                card.addEventListener('mouseleave', function () {
+                    this.style.transform = 'translateY(0)';
+                });
+            });
+
+            // Button click effects
+            const buttons = document.querySelectorAll('.casino-button');
+            buttons.forEach(button => {
+                button.addEventListener('click', function (e) {
+                    // Create ripple effect
+                    const ripple = document.createElement('span');
+                    const rect = this.getBoundingClientRect();
+                    const size = Math.max(rect.width, rect.height);
+                    const x = e.clientX - rect.left - size / 2;
+                    const y = e.clientY - rect.top - size / 2;
+
+                    ripple.style.width = ripple.style.height = size + 'px';
+                    ripple.style.left = x + 'px';
+                    ripple.style.top = y + 'px';
+                    ripple.classList.add('ripple');
+
+                    this.appendChild(ripple);
+
+                    setTimeout(() => {
+                        ripple.remove();
+                    }, 600);
+                });
+            });
+        });
+    </script>
+
+    <style>
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.6);
+            transform: scale(0);
+            animation: ripple-animation 0.6s linear;
+            pointer-events: none;
+        }
+
+        @keyframes ripple-animation {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+    </style>
+</body>
+
+</html>
