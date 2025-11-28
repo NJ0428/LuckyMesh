@@ -98,6 +98,41 @@ export const games = [
     ]
   },
   {
+    id: 'poker',
+    name: '포커',
+    englishName: 'Texas Hold\'em Poker',
+    description: '전략과 심리전이 결합된 텍사스 홀덤 포커',
+    minBet: '₩1,000',
+    maxBet: '₩200,000',
+    houseEdge: '2.2%',
+    rtp: '97.8%',
+    image: '/images/poker.jpg',
+    features: ['전략적 플레이', '심리전', '멀티플레이어', '토너먼트'],
+    rules: {
+      objective: '7장의 카드 중 최고의 5장 조합으로 다른 플레이어를 이기는 것',
+      cardValues: {
+        'A': '가장 높거나 낮은 카드 (상황에 따라)',
+        'K, Q, J, 10-2': '높은 순서대로'
+      },
+      basicRules: [
+        '각 플레이어는 2장의 홀 카드를 받습니다',
+        '5장의 커뮤니티 카드가 테이블에 공개됩니다',
+        '프리플롭, 플롭, 턴, 리버 4번의 베팅 라운드가 있습니다',
+        '최고의 5장 핸드를 만든 플레이어가 팟을 가져갑니다',
+        '블러핑과 포지션 플레이가 중요합니다'
+      ]
+    },
+    payouts: [
+      { condition: '로얄 플러시', payout: '최고 핸드' },
+      { condition: '스트레이트 플러시', payout: '두 번째 핸드' },
+      { condition: '포카드', payout: '세 번째 핸드' },
+      { condition: '풀하우스', payout: '네 번째 핸드' },
+      { condition: '플러시', payout: '다섯 번째 핸드' },
+      { condition: '스트레이트', payout: '여섯 번째 핸드' },
+      { condition: '트리플', payout: '일곱 번째 핸드' }
+    ]
+  },
+  {
     id: 'slots',
     name: '슬롯머신',
     englishName: 'Slot Machine',
