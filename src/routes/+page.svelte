@@ -7,7 +7,7 @@
 
   // 히어로 섹션의 통계
   const stats = [
-    { label: '게임 종류', value: '3+', icon: '🎮' },
+    { label: '게임 종류', value: '5+', icon: '🎮' },
     { label: '최고 환원율', value: '99.5%', icon: '💎' },
     { label: '24시간 지원', value: '365일', icon: '🎧' },
     { label: '안전한 게임', value: '100%', icon: '🛡️' }
