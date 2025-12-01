@@ -100,22 +100,22 @@
   <!-- 실시간 통계 바 -->
   <div class="bg-black/10 backdrop-blur-sm py-3">
     <div class="max-w-7xl mx-auto px-4">
-      <div class="flex flex-wrap justify-center md:justify-between items-center gap-4 text-sm">
+      <div class="flex flex-wrap justify-center md:justify-between items-center gap-4 text-sm text-gray-800">
         <div class="flex items-center space-x-2">
           <span class="text-green-600">🟢</span>
-          <span>현재 플레이어: <strong>{currentStats.activePlayers.toLocaleString()}명</strong></span>
+          <span class="text-gray-800">현재 플레이어: <strong class="text-black">{currentStats.activePlayers.toLocaleString()}명</strong></span>
         </div>
         <div class="flex items-center space-x-2">
           <span>📊</span>
-          <span>오늘 게임 수: <strong>{currentStats.todayGames.toLocaleString()}게임</strong></span>
+          <span class="text-gray-800">오늘 게임 수: <strong class="text-black">{currentStats.todayGames.toLocaleString()}게임</strong></span>
         </div>
         <div class="flex items-center space-x-2">
           <span>💰</span>
-          <span>평균 팟: <strong>{formatCurrency(currentStats.averagePot)}</strong></span>
+          <span class="text-gray-800">평균 팟: <strong class="text-black">{formatCurrency(currentStats.averagePot)}</strong></span>
         </div>
         <div class="flex items-center space-x-2">
           <span>🏆</span>
-          <span>최고 상금: <strong>{formatCurrency(currentStats.maxWin)}</strong></span>
+          <span class="text-gray-800">최고 상금: <strong class="text-black">{formatCurrency(currentStats.maxWin)}</strong></span>
         </div>
       </div>
     </div>
