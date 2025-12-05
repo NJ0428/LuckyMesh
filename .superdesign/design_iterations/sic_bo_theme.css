@@ -1,0 +1,86 @@
+:root {
+    --background: oklch(0.98 0.01 280);
+    --foreground: oklch(0.15 0.02 280);
+    --card: oklch(1.0 0 0);
+    --card-foreground: oklch(0.15 0.02 280);
+    --popover: oklch(1.0 0 0);
+    --popover-foreground: oklch(0.15 0.02 280);
+    --primary: oklch(0.55 0.18 30);
+    --primary-foreground: oklch(0.99 0 0);
+    --secondary: oklch(0.45 0.15 140);
+    --secondary-foreground: oklch(0.99 0 0);
+    --muted: oklch(0.95 0.01 280);
+    --muted-foreground: oklch(0.50 0.02 280);
+    --accent: oklch(0.65 0.20 350);
+    --accent-foreground: oklch(0.99 0 0);
+    --destructive: oklch(0.58 0.24 28);
+    --destructive-foreground: oklch(0.99 0 0);
+    --border: oklch(0.88 0.01 280);
+    --input: oklch(0.92 0.01 280);
+    --ring: oklch(0.55 0.18 30);
+    --chart-1: oklch(0.55 0.18 30);
+    --chart-2: oklch(0.45 0.15 140);
+    --chart-3: oklch(0.65 0.20 350);
+    --chart-4: oklch(0.60 0.16 200);
+    --chart-5: oklch(0.50 0.22 60);
+    --sidebar: oklch(0.99 0 0);
+    --sidebar-foreground: oklch(0.15 0.02 280);
+    --sidebar-primary: oklch(0.55 0.18 30);
+    --sidebar-primary-foreground: oklch(0.99 0 0);
+    --sidebar-accent: oklch(0.95 0.01 280);
+    --sidebar-accent-foreground: oklch(0.15 0.02 280);
+    --sidebar-border: oklch(0.88 0.01 280);
+    --sidebar-ring: oklch(0.55 0.18 30);
+    --font-sans: 'Noto Sans KR', 'Inter', sans-serif;
+    --font-serif: 'Noto Serif KR', 'Merriweather', serif;
+    --font-mono: 'JetBrains Mono', monospace;
+    --radius: 0.75rem;
+    --shadow-2xs: 0 1px 2px 0px hsl(280 20% 10% / 0.05);
+    --shadow-xs: 0 1px 3px 0px hsl(280 20% 10% / 0.08);
+    --shadow-sm: 0 2px 4px 0px hsl(280 20% 10% / 0.10), 0 1px 2px -1px hsl(280 20% 10% / 0.10);
+    --shadow: 0 4px 6px 0px hsl(280 20% 10% / 0.12), 0 2px 4px -1px hsl(280 20% 10% / 0.10);
+    --shadow-md: 0 6px 12px 0px hsl(280 20% 10% / 0.15), 0 4px 8px -2px hsl(280 20% 10% / 0.12);
+    --shadow-lg: 0 10px 20px 0px hsl(280 20% 10% / 0.18), 0 6px 12px -2px hsl(280 20% 10% / 0.15);
+    --shadow-xl: 0 20px 30px 0px hsl(280 20% 10% / 0.22), 0 10px 20px -4px hsl(280 20% 10% / 0.18);
+    --shadow-2xl: 0 25px 50px 0px hsl(280 20% 10% / 0.30);
+    --tracking-normal: -0.01em;
+    --spacing: 0.25rem;
+
+    --radius-sm: calc(var(--radius) - 4px);
+    --radius-md: calc(var(--radius) - 2px);
+    --radius-lg: var(--radius);
+    --radius-xl: calc(var(--radius) + 4px);
+
+    /* Casino specific colors */
+    --casino-gold: oklch(0.75 0.15 85);
+    --casino-red: oklch(0.55 0.22 25);
+    --casino-green: oklch(0.50 0.15 145);
+    --casino-felt: oklch(0.35 0.12 150);
+    --dice-white: oklch(0.98 0 0);
+    --dice-red: oklch(0.50 0.25 20);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--font-sans) !important;
+    background: var(--background) !important;
+    color: var(--foreground) !important;
+    line-height: 1.6 !important;
+    letter-spacing: var(--tracking-normal) !important;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-family: var(--font-sans) !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.02em !important;
+}
