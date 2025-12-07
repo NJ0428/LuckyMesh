@@ -11,7 +11,7 @@
     { href: '/baccarat', label: '바카라', icon: '♠️' },
     { href: '/roulette', label: '룰렛', icon: '🎰' },
     { href: '/poker', label: '포커', icon: '♥️' },
-    { href: '/sic-bo', label: '다이사이', icon: '🎲' },
+    { href: '/sicbo', label: '다이사이', icon: '🎲' },
     { href: '/slots', label: '슬롯', icon: '🍒' }
   ];
 
