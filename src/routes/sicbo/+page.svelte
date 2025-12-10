@@ -420,26 +420,38 @@
                  <div class="space-y-4 text-gray-700">
                      <div>
                          <h4 class="font-semibold mb-2">🎲 게임 방법</h4>
-                         <p class="text-sm">다이사이는 3개의 주사위를 사용하는 전통적인 아시아 카지노 게임입니다. 주사위의 합계나 조합을 예측하여 베팅합니다.</p>
+                         <p class="text-sm">다이사이는 3개의 주사위를 사용하는 전통적인 아시아 카지노 게임입니다. 플레이어는 딜러가 굴리는 세 개의 주사위의 결과를 예측하여 베팅합니다. 다양한 베팅 옵션이 있으며, 각 베팅은 주사위의 합계, 특정 숫자 또는 특정 조합에 따라 승패가 결정됩니다. 게임의 목표는 주사위 결과가 자신의 베팅과 일치하도록 맞추는 것입니다.</p>
                      </div>
                      <div>
-                         <h4 class="font-semibold mb-2">💰 베팅 종류</h4>
+                         <h4 class="font-semibold mb-2">💰 베팅 종류 및 배당률</h4>
                          <ul class="text-sm space-y-1 list-disc list-inside">
-                             <li><strong>소/대:</strong> 합계 4-10(소) 또는 11-17(대) - 배당 1:1</li>
-                             <li><strong>합계:</strong> 정확한 합계 예측 - 배당 1:6 ~ 1:60</li>
-                             <li><strong>단일 숫자:</strong> 특정 숫자가 나올 것을 예측 - 배당 1:1</li>
-                             <li><strong>더블:</strong> 같은 숫자 2개 - 배당 1:10</li>
-                             <li><strong>트리플:</strong> 같은 숫자 3개 - 배당 1:180</li>
-                             <li><strong>ANY 트리플:</strong> 아무 트리플 - 배당 1:30</li>
+                             <li><strong>소/대 (Small/Big):</strong>
+                                 <p class="ml-4">주사위 세 개의 합계가 4에서 10 사이이면 '소'(Small)에 베팅한 사람이 승리합니다. 11에서 17 사이이면 '대'(Big)에 베팅한 사람이 승리합니다. 트리플(세 개의 주사위가 모두 같은 숫자)이 나오면 '소' 또는 '대' 베팅은 모두 패배합니다. 배당률: 1:1</p>
+                             </li>
+                             <li><strong>합계 (Total Sum):</strong>
+                                 <p class="ml-4">주사위 세 개의 정확한 합계를 예측하여 베팅합니다. 합계 4 또는 17은 1:60, 5 또는 16은 1:30, 6 또는 15는 1:17, 7 또는 14는 1:12, 8 또는 13은 1:8, 9, 10, 11, 12는 1:6 등 다양한 배당률을 가집니다. (트리플 제외)</p>
+                             </li>
+                             <li><strong>단일 숫자 (Single Number):</strong>
+                                 <p class="ml-4">특정 숫자가 나올 것을 예측하여 베팅합니다. 선택한 숫자가 주사위 중 하나에 나오면 1:1, 두 개에 나오면 1:2, 세 개에 나오면 1:3의 배당을 받습니다.</p>
+                             </li>
+                             <li><strong>더블 (Double):</strong>
+                                 <p class="ml-4">두 개의 주사위가 같은 숫자가 나올 것을 예측하여 베팅합니다. (예: 두 개의 주사위가 1이 나올 경우). 예측한 더블이 나오면 배당률은 1:10입니다. 트리플이 나올 경우 더블 베팅은 패배합니다.</p>
+                             </li>
+                             <li><strong>트리플 (Triple / Specific Triple):</strong>
+                                 <p class="ml-4">세 개의 주사위가 모두 같은 숫자가 나올 것을 예측하여 베팅합니다. 특정 숫자의 트리플(예: 세 개의 주사위가 모두 1이 나올 경우)에 베팅하면 배당률은 1:180으로 매우 높습니다.</p>
+                             </li>
+                             <li><strong>ANY 트리플 (Any Triple):</strong>
+                                 <p class="ml-4">어떤 숫자든 상관없이 세 개의 주사위가 모두 같은 숫자가 나올 것을 예측하여 베팅합니다. 배당률은 1:30입니다.</p>
+                             </li>
                          </ul>
                      </div>
                      <div>
                          <h4 class="font-semibold mb-2">📊 RTP (환수율)</h4>
-                         <p class="text-sm">평균 RTP: 97.22% (베팅 종류에 따라 다름)</p>
+                         <p class="text-sm">평균 RTP(Return To Player): 97.22% (베팅 종류에 따라 다름). 이는 장기적으로 플레이어가 베팅한 금액 중 평균적으로 돌려받을 수 있는 비율을 의미합니다.</p>
                      </div>
                      <div>
                          <h4 class="font-semibold mb-2">💵 베팅 범위</h4>
-                         <p class="text-sm">최소: ₩1,000 ~ 최대: ₩500,000</p>
+                         <p class="text-sm">최소: ₩1,000 ~ 최대: ₩500,000. 각 테이블마다 설정된 최소/최대 베팅 금액이 다를 수 있습니다.</p>
                      </div>
                  </div>
             </div>
@@ -510,7 +522,7 @@
         position: absolute;
         width: 80px;
         height: 80px;
-        background: white;
+        background: #020202ff; /* Light yellow */
         border: 2px solid #333;
         border-radius: 12px;
         display: flex;
