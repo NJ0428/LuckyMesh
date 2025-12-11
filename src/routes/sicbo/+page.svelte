@@ -4,8 +4,9 @@
     import { cubicOut } from 'svelte/easing';
     import {
         ArrowLeft, Coins, BarChart3, BookOpen, History, XCircle, Dice6,
-        ArrowRight, CheckCircle, AlertCircle
+        ArrowRight, CheckCircle, AlertCircle, HelpCircle
     } from 'lucide-svelte';
+    import SicBoHelpModal from '../../lib/components/SicBoHelpModal.svelte';
 
     // Game State
     let balance = 50000;
@@ -22,6 +23,7 @@
     let totalBet = 0;
     let gameInProgress = false;
     let activeTab = 'stats';
+    let showHelpModal = false; // New state for modal
     let result = {
         dice: [0, 0, 0],
         sum: 0,
@@ -390,6 +392,12 @@
                     <History class="w-4 h-4 inline mr-1" />
                     최근 결과
                 </button>
+                <button
+                    class="tab-btn px-4 py-2 font-semibold transition"
+                    on:click={() => showHelpModal = true}>
+                    <HelpCircle class="w-4 h-4 inline mr-1" />
+                    도움말
+                </button>
             </div>
 
             {#if activeTab === 'stats'}
@@ -486,6 +494,8 @@
             {/if}
         </div>
 </main>
+
+<SicBoHelpModal bind:showModal={showHelpModal} on:close={() => showHelpModal = false} />
 
 <style>
     .dice-container {
