@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VIP 라운지 - LuckyMesh Casino</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flowbite@2.0.0/dist/flowbite.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="vip_theme.css">
+    <style>
+        body {
+            background: var(--background);
+            color: var(--foreground);
+            font-family: var(--font-sans);
+        }
+
+        .vip-header {
+            background: linear-gradient(135deg,
+                    oklch(0.1000 0.0200 45) 0%,
+                    oklch(0.0500 0 0) 50%,
+                    oklch(0.1000 0.0200 45) 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .vip-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 50% 50%,
+                    oklch(0.7500 0.2500 45 / 0.1) 0%,
+                    transparent 70%);
+            animation: glow 4s ease-in-out infinite;
+        }
+
+        .tier-card {
+            backdrop-filter: blur(10px);
+            border: 1px solid oklch(0.2000 0.0200 45 / 0.3);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tier-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg,
+                    oklch(0.7500 0.2500 45 / 0.05) 0%,
+                    transparent 50%,
+                    oklch(0.7500 0.2500 45 / 0.05) 100%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .tier-card:hover::before {
+            opacity: 1;
+        }
+
+        .tier-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 40px oklch(0.7500 0.2500 45 / 0.3);
+        }
+
+        .progress-bar {
+            background: linear-gradient(90deg,
+                    var(--vip-gold) 0%,
+                    oklch(0.8500 0.3000 45) 50%,
+                    var(--vip-gold) 100%);
+            background-size: 200% 100%;
+            animation: shimmer 2s infinite;
+        }
+
+        .benefit-card {
+            background: oklch(0.0800 0.0150 45 / 0.8);
+            backdrop-filter: blur(15px);
+            border: 1px solid oklch(0.2000 0.0200 45 / 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .benefit-card:hover {
+            transform: translateY(-4px);
+            border-color: oklch(0.7500 0.2500 45 / 0.5);
+            box-shadow: 0 12px 24px oklch(0.7500 0.2500 45 / 0.2);
+        }
+
+        .stats-grid {
+            background: linear-gradient(135deg,
+                    oklch(0.0800 0.0150 45 / 0.9) 0%,
+                    oklch(0.0600 0.0100 45 / 0.9) 100%);
+            backdrop-filter: blur(20px);
+            border: 1px solid oklch(0.2000 0.0200 45 / 0.3);
+        }
+
+        .crown-icon {
+            color: var(--vip-gold);
+            filter: drop-shadow(0 0 10px oklch(0.7500 0.2500 45 / 0.5));
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .star-rating {
+            color: var(--vip-gold);
+            text-shadow: 0 0 10px oklch(0.7500 0.2500 45 / 0.8);
+        }
+
+        .luxury-button {
+            background: var(--gradient-gold);
+            border: none;
+            color: var(--background);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .luxury-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px oklch(0.7500 0.2500 45 / 0.4);
+        }
+
+        .luxury-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, oklch(1 0 0 / 0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        .luxury-button:hover::before {
+            left: 100%;
+        }
+
+        .animate-fade-in-up {
+            animation: fadeInUp 0.8s ease-out forwards;
+        }
+
+        .animate-fade-in-up-delay-1 {
+            animation: fadeInUp 0.8s ease-out 0.2s forwards;
+            opacity: 0;
+        }
+
+        .animate-fade-in-up-delay-2 {
+            animation: fadeInUp 0.8s ease-out 0.4s forwards;
+            opacity: 0;
+        }
+
+        .animate-fade-in-up-delay-3 {
+            animation: fadeInUp 0.8s ease-out 0.6s forwards;
+            opacity: 0;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .counter {
+            font-family: var(--font-mono);
+            font-weight: 600;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen">
+    <!-- VIP 헤더 -->
+    <header class="vip-header py-16 text-center relative animate-fade-in-up">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center justify-center mb-6">
+                <i data-lucide="crown" class="crown-icon w-16 h-16 mr-4"></i>
+                <h1
+                    class="text-6xl font-bold bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-600 bg-clip-text text-transparent">
+                    VIP LOUNGE
+                </h1>
+                <i data-lucide="crown" class="crown-icon w-16 h-16 ml-4"></i>
+            </div>
+            <p class="text-xl text-muted-foreground max-w-2xl mx-auto">
+                최고의 특권과 혜택을 누리는 프리미엄 멤버십
+            </p>
+        </div>
+    </header>
+
+    <!-- VIP 등급 카드 섹션 -->
+    <section class="py-20 px-4 animate-fade-in-up-delay-1">
+        <div class="container mx-auto">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                <!-- 플래티넘 등급 -->
+                <div class="tier-card vip-platinum rounded-2xl p-8 text-center">
+                    <div class="mb-6">
+                        <h3 class="text-2xl font-bold mb-2">PLATINUM</h3>
+                        <div class="star-rating text-3xl mb-4">⭐⭐⭐⭐⭐</div>
+                        <div class="text-sm opacity-80">최고 등급</div>
+                    </div>
+
+                    <div class="space-y-4 mb-8 text-left">
+                        <div class="flex items-center">
+                            <i data-lucide="infinity" class="w-5 h-5 mr-3 text-yellow-400"></i>
+                            <span>무제한 베팅 한도</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i data-lucide="user-check" class="w-5 h-5 mr-3 text-yellow-400"></i>
+                            <span>전용 딜러 서비스</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i data-lucide="headphones" class="w-5 h-5 mr-3 text-yellow-400"></i>
+                            <span>개인 매니저 배정</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i data-lucide="calendar-star" class="w-5 h-5 mr-3 text-yellow-400"></i>
+                            <span>럭셔리 이벤트 초대</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i data-lucide="zap" class="w-5 h-5 mr-3 text-yellow-400"></i>
+                            <span>즉시 출금 (수수료 면제)</span>
+                        </div>
+                    </div>
+
+                    <button class="luxury-button w-full py-3 px-6 rounded-lg font-semibold">
+                        가입하기
+                    </button>
+                </div>
+
+                <!-- 골드 등급 -->
+                <div class="tier-card vip-gold rounded-2xl p-8 text-center">
+                    <div class="mb-6">
+                        <h3 class="text-2xl font-bold mb-2">GOLD</h3>
+                        <div class="star-rating text-3xl mb-4">⭐⭐⭐⭐</div>
+                        <div class="text-sm opacity-80">프리미엄 등급</div>
+                    </div>
+
+                    <div class="space-y-4 mb-8 text-left">
+                        <div class="flex items-center">
+                            <i data-lucide="trending-up" class="w-5 h-5 mr-3 text-yellow-400"></i>
+                            <span>높은 베팅 한도</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i data-lucide="clock" class="w-5 h-5 mr-3 text-yellow-400"></i>
+                            <span>빠른 출금 (24시간)</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i data-lucide="gift" class="w-5 h-5 mr-3 text-yellow-400"></i>
+                            <span>보너스 2배 적용</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i data-lucide="star" class="w-5 h-5 mr-3 text-yellow-400"></i>
+                            <span>VIP 이벤트 참여</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i data-lucide="shield-check" class="w-5 h-5 mr-3 text-yellow-400"></i>
+                            <span>우선 고객 지원</span>
+                        </div>
+                    </div>
+
+                    <button class="luxury-button w-full py-3 px-6 rounded-lg font-semibold">
+                        가입하기
+                    </button>
+                </div>
+
+                <!-- 실버 등급 -->
+                <div class="tier-card vip-silver rounded-2xl p-8 text-center">
+                    <div class="mb-6">
+                        <h3 class="text-2xl font-bold mb-2">SILVER</h3>
+                        <div class="star-rating text-3xl mb-4">⭐⭐⭐</div>
+                        <div class="text-sm opacity-80">스탠다드 등급</div>
+                    </div>
+
+                    <div class="space-y-4 mb-8 text-left">
+                        <div class="flex items-center">
+                            <i data-lucide="arrow-up" class="w-5 h-5 mr-3 text-gray-400"></i>
+                            <span>중간 베팅 한도</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i data-lucide="headphones" class="w-5 h-5 mr-3 text-gray-400"></i>
+                            <span>우선 고객 지원</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i data-lucide="calendar" class="w-5 h-5 mr-3 text-gray-400"></i>
+                            <span>월간 보너스</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i data-lucide="percent" class="w-5 h-5 mr-3 text-gray-400"></i>
+                            <span>특별 혜택</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i data-lucide="clock-3" class="w-5 h-5 mr-3 text-gray-400"></i>
+                            <span>빠른 출금 (48시간)</span>
+                        </div>
+                    </div>
+
+                    <button class="luxury-button w-full py-3 px-6 rounded-lg font-semibold">
+                        가입하기
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- VIP 전용 혜택 섹션 -->
+    <section class="py-20 px-4 animate-fade-in-up-delay-2">
+        <div class="container mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold mb-4 flex items-center justify-center">
+                    <i data-lucide="target" class="w-10 h-10 mr-4 text-yellow-400"></i>
+                    VIP 전용 혜택
+                </h2>
+                <p class="text-xl text-muted-foreground">프리미엄 멤버만을 위한 특별한 서비스</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+                <div class="benefit-card rounded-2xl p-8 text-center">
+                    <div
+                        class="w-16 h-16 mx-auto mb-6 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center">
+                        <i data-lucide="coins" class="w-8 h-8 text-black"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-4">💰 캐시백</h3>
+                    <p class="text-muted-foreground mb-4">매주 최대</p>
+                    <p class="text-3xl font-bold text-yellow-400">10% 캐시백</p>
+                </div>
+
+                <div class="benefit-card rounded-2xl p-8 text-center">
+                    <div
+                        class="w-16 h-16 mx-auto mb-6 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center">
+                        <i data-lucide="gift" class="w-8 h-8 text-black"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-4">🎁 보너스</h3>
+                    <p class="text-muted-foreground mb-4">매월 특별</p>
+                    <p class="text-3xl font-bold text-yellow-400">보너스 지급</p>
+                </div>
+
+                <div class="benefit-card rounded-2xl p-8 text-center">
+                    <div
+                        class="w-16 h-16 mx-auto mb-6 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center">
+                        <i data-lucide="zap" class="w-8 h-8 text-black"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-4">⚡ 빠른출금</h3>
+                    <p class="text-muted-foreground mb-4">1시간 내</p>
+                    <p class="text-3xl font-bold text-yellow-400">즉시 출금</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- VIP 통계 대시보드 -->
+    <section class="py-20 px-4 animate-fade-in-up-delay-3">
+        <div class="container mx-auto max-w-4xl">
+            <div class="stats-grid rounded-3xl p-8">
+                <div class="text-center mb-12">
+                    <h2 class="text-4xl font-bold mb-4 flex items-center justify-center">
+                        <i data-lucide="bar-chart-3" class="w-10 h-10 mr-4 text-yellow-400"></i>
+                        VIP 통계 대시보드
+                    </h2>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+                    <div class="text-center">
+                        <div class="flex items-center justify-center mb-4">
+                            <span class="text-2xl font-bold mr-4">현재 등급:</span>
+                            <span class="text-3xl font-bold text-yellow-400">GOLD ⭐⭐⭐⭐</span>
+                        </div>
+                    </div>
+                    <div class="text-center">
+                        <div class="flex items-center justify-center mb-4">
+                            <span class="text-2xl font-bold mr-4">다음 등급까지:</span>
+                            <span class="text-3xl font-bold text-yellow-400 counter">₩2,500,000</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 진행률 바 -->
+                <div class="mb-12">
+                    <div class="flex justify-between items-center mb-4">
+                        <span class="text-lg font-semibold">플래티넘 등급까지</span>
+                        <span class="text-lg font-bold text-yellow-400">75%</span>
+                    </div>
+                    <div class="w-full bg-gray-700 rounded-full h-4 overflow-hidden">
+                        <div class="progress-bar h-full rounded-full" style="width: 75%"></div>
+                    </div>
+                </div>
+
+                <!-- 통계 그리드 -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                    <div class="text-center">
+                        <div class="text-sm text-muted-foreground mb-2">이번 달 베팅</div>
+                        <div class="text-2xl font-bold text-yellow-400 counter">₩7,500,000</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-sm text-muted-foreground mb-2">VIP 포인트</div>
+                        <div class="text-2xl font-bold text-yellow-400 counter">15,750</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-sm text-muted-foreground mb-2">캐시백 적립</div>
+                        <div class="text-2xl font-bold text-green-400 counter">₩750,000</div>
+                    </div>
+                    <div class="text-center">
+                        <button class="luxury-button px-6 py-3 rounded-lg font-semibold text-sm">
+                            보너스 받기
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        // 아이콘 초기화
+        lucide.createIcons();
+
+        // 카운터 애니메이션
+        function animateCounter(element, target, duration = 2000) {
+            const start = 0;
+            const increment = target / (duration / 16);
+            let current = start;
+
+            const timer = setInterval(() => {
+                current += increment;
+                if (current >= target) {
+                    current = target;
+                    clearInterval(timer);
+                }
+
+                if (element.textContent.includes('₩')) {
+                    element.textContent = '₩' + Math.floor(current).toLocaleString();
+                } else {
+                    element.textContent = Math.floor(current).toLocaleString();
+                }
+            }, 16);
+        }
+
+        // 페이지 로드 시 카운터 애니메이션 실행
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                const counters = document.querySelectorAll('.counter');
+                counters.forEach(counter => {
+                    const text = counter.textContent;
+                    const number = parseInt(text.replace(/[^\d]/g, ''));
+                    if (number > 0) {
+                        animateCounter(counter, number);
+                    }
+                });
+            }, 1000);
+        });
+
+        // 진행률 바 애니메이션
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                const progressBar = document.querySelector('.progress-bar');
+                progressBar.style.width = '0%';
+                setTimeout(() => {
+                    progressBar.style.transition = 'width 1.5s ease-out';
+                    progressBar.style.width = '75%';
+                }, 100);
+            }, 1200);
+        });
+
+        // 스크롤 애니메이션
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        // 애니메이션 요소들 관찰
+        document.querySelectorAll('.animate-fade-in-up, .animate-fade-in-up-delay-1, .animate-fade-in-up-delay-2, .animate-fade-in-up-delay-3').forEach(el => {
+            observer.observe(el);
+        });
+    </script>
+</body>
+
+</html>
