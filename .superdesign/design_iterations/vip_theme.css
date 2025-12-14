@@ -1,0 +1,162 @@
+:root {
+    --background: oklch(0.0500 0 0);
+    --foreground: oklch(0.9800 0.0200 45);
+    --card: oklch(0.0800 0.0150 45);
+    --card-foreground: oklch(0.9500 0.0200 45);
+    --popover: oklch(0.0800 0.0150 45);
+    --popover-foreground: oklch(0.9500 0.0200 45);
+    --primary: oklch(0.7500 0.2500 45);
+    --primary-foreground: oklch(0.0500 0 0);
+    --secondary: oklch(0.6800 0.1800 25);
+    --secondary-foreground: oklch(0.0500 0 0);
+    --muted: oklch(0.1200 0.0100 45);
+    --muted-foreground: oklch(0.6500 0.0150 45);
+    --accent: oklch(0.8200 0.2200 60);
+    --accent-foreground: oklch(0.0500 0 0);
+    --destructive: oklch(0.6200 0.2800 15);
+    --destructive-foreground: oklch(0.9800 0.0200 45);
+    --border: oklch(0.2000 0.0200 45);
+    --input: oklch(0.1500 0.0150 45);
+    --ring: oklch(0.7500 0.2500 45);
+    --chart-1: oklch(0.7500 0.2500 45);
+    --chart-2: oklch(0.6800 0.1800 25);
+    --chart-3: oklch(0.8200 0.2200 60);
+    --chart-4: oklch(0.7200 0.2000 80);
+    --chart-5: oklch(0.6500 0.1500 120);
+    --sidebar: oklch(0.0600 0.0100 45);
+    --sidebar-foreground: oklch(0.9500 0.0200 45);
+    --sidebar-primary: oklch(0.7500 0.2500 45);
+    --sidebar-primary-foreground: oklch(0.0500 0 0);
+    --sidebar-accent: oklch(0.8200 0.2200 60);
+    --sidebar-accent-foreground: oklch(0.0500 0 0);
+    --sidebar-border: oklch(0.2000 0.0200 45);
+    --sidebar-ring: oklch(0.7500 0.2500 45);
+    --font-sans: 'Playfair Display', serif;
+    --font-serif: 'Playfair Display', serif;
+    --font-mono: 'JetBrains Mono', monospace;
+    --radius: 0.75rem;
+    --shadow-2xs: 0 2px 8px 0px hsl(45 100% 50% / 0.15);
+    --shadow-xs: 0 2px 8px 0px hsl(45 100% 50% / 0.15);
+    --shadow-sm: 0 4px 12px 0px hsl(45 100% 50% / 0.20), 0 2px 4px -1px hsl(45 100% 50% / 0.15);
+    --shadow: 0 4px 12px 0px hsl(45 100% 50% / 0.20), 0 2px 4px -1px hsl(45 100% 50% / 0.15);
+    --shadow-md: 0 6px 16px 0px hsl(45 100% 50% / 0.25), 0 4px 8px -1px hsl(45 100% 50% / 0.20);
+    --shadow-lg: 0 8px 20px 0px hsl(45 100% 50% / 0.30), 0 6px 12px -1px hsl(45 100% 50% / 0.25);
+    --shadow-xl: 0 12px 24px 0px hsl(45 100% 50% / 0.35), 0 8px 16px -1px hsl(45 100% 50% / 0.30);
+    --shadow-2xl: 0 16px 32px 0px hsl(45 100% 50% / 0.40);
+    --tracking-normal: 0.025em;
+    --spacing: 0.25rem;
+
+    --radius-sm: calc(var(--radius) - 4px);
+    --radius-md: calc(var(--radius) - 2px);
+    --radius-lg: var(--radius);
+    --radius-xl: calc(var(--radius) + 4px);
+
+    /* VIP 전용 색상 */
+    --vip-platinum: oklch(0.8500 0.0500 240);
+    --vip-gold: oklch(0.7500 0.2500 45);
+    --vip-silver: oklch(0.7000 0.0300 240);
+    --vip-bronze: oklch(0.6500 0.1500 25);
+
+    /* 그라디언트 */
+    --gradient-gold: linear-gradient(135deg, oklch(0.8500 0.3000 45) 0%, oklch(0.6500 0.2000 35) 100%);
+    --gradient-platinum: linear-gradient(135deg, oklch(0.9000 0.0500 240) 0%, oklch(0.7000 0.0300 220) 100%);
+    --gradient-silver: linear-gradient(135deg, oklch(0.8000 0.0400 240) 0%, oklch(0.6000 0.0200 230) 100%);
+}
+
+/* 커스텀 애니메이션 */
+@keyframes shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+@keyframes glow {
+
+    0%,
+    100% {
+        box-shadow: 0 0 20px oklch(0.7500 0.2500 45 / 0.3);
+    }
+
+    50% {
+        box-shadow: 0 0 40px oklch(0.7500 0.2500 45 / 0.6);
+    }
+}
+
+@keyframes float {
+
+    0%,
+    100% {
+        transform: translateY(0px);
+    }
+
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+.shimmer {
+    background: linear-gradient(90deg, transparent, oklch(0.7500 0.2500 45 / 0.4), transparent);
+    background-size: 200% 100%;
+    animation: shimmer 2s infinite;
+}
+
+.glow {
+    animation: glow 2s ease-in-out infinite;
+}
+
+.float {
+    animation: float 3s ease-in-out infinite;
+}
+
+/* VIP 등급별 스타일 */
+.vip-platinum {
+    background: var(--gradient-platinum);
+    border: 2px solid var(--vip-platinum);
+}
+
+.vip-gold {
+    background: var(--gradient-gold);
+    border: 2px solid var(--vip-gold);
+}
+
+.vip-silver {
+    background: var(--gradient-silver);
+    border: 2px solid var(--vip-silver);
+}
+
+/* 럭셔리 버튼 스타일 */
+.luxury-btn {
+    background: var(--gradient-gold);
+    border: none;
+    color: var(--background);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.luxury-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-xl);
+}
+
+.luxury-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, oklch(1 0 0 / 0.3), transparent);
+    transition: left 0.5s;
+}
+
+.luxury-btn:hover::before {
+    left: 100%;
+}
