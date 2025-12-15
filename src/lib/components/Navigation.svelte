@@ -12,7 +12,8 @@
     { href: '/roulette', label: '룰렛', icon: '🎰' },
     { href: '/poker', label: '포커', icon: '♥️' },
     { href: '/sicbo', label: '다이사이', icon: '🎲' },
-    { href: '/slots', label: '슬롯', icon: '🍒' }
+    { href: '/slots', label: '슬롯', icon: '🍒' },
+    { href: '/vip', label: 'VIP', icon: '👑' }
   ];
 
   function toggleMobileMenu() {
@@ -121,6 +122,9 @@
                   <a href="/history" class="block px-4 py-2 text-sm text-gray-600 hover:bg-white/20 hover:text-primary-soft-purple transition-colors duration-200 font-poppins">
                     📊 게임 기록
                   </a>
+                  <a href="/vip" class="block px-4 py-2 text-sm text-gray-600 hover:bg-white/20 hover:text-primary-soft-purple transition-colors duration-200 font-poppins">
+                    👑 VIP 라운지
+                  </a>
                   <a href="/settings" class="block px-4 py-2 text-sm text-gray-600 hover:bg-white/20 hover:text-primary-soft-purple transition-colors duration-200 font-poppins">
                     ⚙️ 설정
                   </a>
@@ -209,6 +213,9 @@
               </a>
               <a href="/history" class="block px-3 py-2 rounded-md text-white hover:bg-casino-gold/20 hover:text-casino-gold transition-colors duration-200">
                 📊 게임 기록
+              </a>
+              <a href="/vip" class="block px-3 py-2 rounded-md text-white hover:bg-casino-gold/20 hover:text-casino-gold transition-colors duration-200">
+                👑 VIP 라운지
               </a>
               <a href="/settings" class="block px-3 py-2 rounded-md text-white hover:bg-casino-gold/20 hover:text-casino-gold transition-colors duration-200">
                 ⚙️ 설정
