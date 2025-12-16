@@ -191,7 +191,7 @@
         {#each vipTiers as tier}
           <div class="rounded-2xl p-8 text-center backdrop-filter backdrop-blur-lg border transition-all duration-300 hover:transform hover:-translate-y-2 hover:scale-105 relative overflow-hidden"
                style="background: oklch(0.0800 0.0150 45 / 0.8); border-color: oklch(0.2000 0.0200 45 / 0.3);"
-               class:opacity-75={tier.name === 'SILVER'}">
+               class:opacity-75={tier.name === 'SILVER'}>
 
             <div class="mb-6">
               <h3 class="text-2xl font-bold mb-2">{tier.name}</h3>
@@ -203,7 +203,7 @@
               {#each tier.benefits as benefit}
                 <div class="flex items-center">
                   <div class="w-5 h-5 mr-3 {benefit.color}" style="display: flex; align-items: center; justify-content: center;">
-                    {#if benefit.icon === 'infinity'}∞{:else if benefit.icon === 'user-check'}✓{:else if benefit.icon === 'headphones'}🎧{:else if benefit.icon === 'calendar-star'}📅{:else if benefit.icon === 'zap'}⚡{:else if benefit.icon === 'trending-up'}📈{:else if benefit.icon === 'clock'}🕐{:else if benefit.icon === 'gift'}🎁{:else if benefit.icon === 'star'}⭐{:else if benefit.icon === 'shield-check'}🛡️{:else if benefit.icon === 'arrow-up'}↑{:else if benefit.icon === 'calendar'}📅{:else if benefit.icon === 'percent'}%{:else if benefit.icon === 'clock-3'}🕐{/:if}
+                    {#if benefit.icon === 'infinity'}∞{:else if benefit.icon === 'user-check'}✓{:else if benefit.icon === 'headphones'}🎧{:else if benefit.icon === 'calendar-star'}📅{:else if benefit.icon === 'zap'}⚡{:else if benefit.icon === 'trending-up'}📈{:else if benefit.icon === 'clock'}🕐{:else if benefit.icon === 'gift'}🎁{:else if benefit.icon === 'star'}⭐{:else if benefit.icon === 'shield-check'}🛡️{:else if benefit.icon === 'arrow-up'}↑{:else if benefit.icon === 'calendar'}📅{:else if benefit.icon === 'percent'}%{:else if benefit.icon === 'clock-3'}🕐{/if}
                   </div>
                   <span>{benefit.label}</span>
                 </div>
@@ -238,7 +238,7 @@
           <div class="rounded-2xl p-8 text-center backdrop-filter backdrop-blur-lg border transition-all duration-300 hover:transform hover:-translate-y-1"
                style="background: oklch(0.0800 0.0150 45 / 0.8); border-color: oklch(0.2000 0.0200 45 / 0.2);">
             <div class="w-16 h-16 mx-auto mb-6 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center">
-              {#if benefit.icon === 'coins'}💰{:else if benefit.icon === 'gift'}🎁{:else if benefit.icon === 'zap'}⚡{/:if}
+              {#if benefit.icon === 'coins'}💰{:else if benefit.icon === 'gift'}🎁{:else if benefit.icon === 'zap'}⚡{/if}
             </div>
             <h3 class="text-2xl font-bold mb-4">{benefit.title}</h3>
             <p class="opacity-80 mb-4">{benefit.description}</p>
