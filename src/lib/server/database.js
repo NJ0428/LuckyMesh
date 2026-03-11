@@ -111,6 +111,94 @@ const createRewardDistributionsTable = db.prepare(`
   )
 `);
 
+// 토너먼트 테이블 생성
+const createTournamentsTable = db.prepare(`
+  CREATE TABLE IF NOT EXISTS tournaments (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    description TEXT,
+    tournament_type TEXT NOT NULL,
+    game_type TEXT NOT NULL,
+    entry_fee INTEGER NOT NULL DEFAULT 0,
+    prize_pool INTEGER NOT NULL DEFAULT 0,
+    min_participants INTEGER DEFAULT 10,
+    max_participants INTEGER DEFAULT 1000,
+    status TEXT NOT NULL DEFAULT 'scheduled',
+    registration_start DATETIME NOT NULL,
+    registration_end DATETIME NOT NULL,
+    tournament_start DATETIME NOT NULL,
+    tournament_end DATETIME NOT NULL,
+    prize_distribution_type TEXT NOT NULL DEFAULT 'percentage',
+    total_prizes INTEGER DEFAULT 10,
+    vip_tier_required TEXT DEFAULT 'all',
+    min_balance_required INTEGER DEFAULT 0,
+    auto_start BOOLEAN DEFAULT TRUE,
+    created_by INTEGER,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (created_by) REFERENCES users (id) ON DELETE SET NULL
+  )
+`);
+
+// 토너먼트 참가자 테이블 생성
+const createTournamentParticipantsTable = db.prepare(`
+  CREATE TABLE IF NOT EXISTS tournament_participants (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    tournament_id INTEGER NOT NULL,
+    user_id INTEGER NOT NULL,
+    entry_fee_paid INTEGER DEFAULT 0,
+    registered_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    total_bet_amount INTEGER DEFAULT 0,
+    total_win_amount INTEGER DEFAULT 0,
+    net_profit INTEGER DEFAULT 0,
+    games_played INTEGER DEFAULT 0,
+    current_rank INTEGER DEFAULT 0,
+    status TEXT NOT NULL DEFAULT 'registered',
+    disqualified_at DATETIME,
+    disqualification_reason TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (tournament_id) REFERENCES tournaments (id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+    UNIQUE(tournament_id, user_id)
+  )
+`);
+
+// 토너먼트 보상 테이블 생성
+const createTournamentPrizesTable = db.prepare(`
+  CREATE TABLE IF NOT EXISTS tournament_prizes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    tournament_id INTEGER NOT NULL,
+    rank_from INTEGER NOT NULL,
+    rank_to INTEGER NOT NULL,
+    prize_type TEXT NOT NULL,
+    prize_amount INTEGER NOT NULL,
+    prize_percentage INTEGER DEFAULT NULL,
+    winner_id INTEGER,
+    is_distributed BOOLEAN DEFAULT FALSE,
+    distributed_at DATETIME,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (tournament_id) REFERENCES tournaments (id) ON DELETE CASCADE,
+    FOREIGN KEY (winner_id) REFERENCES users (id) ON DELETE SET NULL
+  )
+`);
+
+// 토너먼트 게임 기록 테이블 생성
+const createTournamentGameHistoryTable = db.prepare(`
+  CREATE TABLE IF NOT EXISTS tournament_game_history (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    tournament_id INTEGER NOT NULL,
+    user_id INTEGER NOT NULL,
+    game_type TEXT NOT NULL,
+    bet_amount INTEGER NOT NULL,
+    win_amount INTEGER DEFAULT 0,
+    result TEXT NOT NULL,
+    played_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (tournament_id) REFERENCES tournaments (id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+  )
+`);
+
 // 테이블 생성 실행
 createUserTable.run();
 createSessionTable.run();
@@ -118,6 +206,10 @@ createGameHistoryTable.run();
 createRankingsTable.run();
 createRankingRewardsTable.run();
 createRewardDistributionsTable.run();
+createTournamentsTable.run();
+createTournamentParticipantsTable.run();
+createTournamentPrizesTable.run();
+createTournamentGameHistoryTable.run();
 
 // 기존 사용자들의 잔액이 0인 경우 10000으로 업데이트
 const updateZeroBalances = db.prepare(`
@@ -169,6 +261,21 @@ try {
     CREATE INDEX IF NOT EXISTS idx_reward_distributions_user ON reward_distributions(user_id);
     CREATE INDEX IF NOT EXISTS idx_reward_distributions_claimed ON reward_distributions(is_claimed, expires_at);
     CREATE INDEX IF NOT EXISTS idx_reward_distributions_ranking ON reward_distributions(ranking_id);
+  `);
+} catch (e) {
+  console.error('Index creation error:', e);
+}
+
+// 인덱스 생성 (토너먼트)
+try {
+  db.exec(`
+    CREATE INDEX IF NOT EXISTS idx_tournaments_status_type ON tournaments(status, tournament_type);
+    CREATE INDEX IF NOT EXISTS idx_tournaments_timing ON tournaments(tournament_start, tournament_end);
+    CREATE INDEX IF NOT EXISTS idx_tournament_participants_tournament ON tournament_participants(tournament_id, status);
+    CREATE INDEX IF NOT EXISTS idx_tournament_participants_user ON tournament_participants(user_id);
+    CREATE INDEX IF NOT EXISTS idx_tournament_participants_ranking ON tournament_participants(tournament_id, current_rank);
+    CREATE INDEX IF NOT EXISTS idx_tournament_prizes_tournament ON tournament_prizes(tournament_id, is_distributed);
+    CREATE INDEX IF NOT EXISTS idx_tournament_game_history_tournament ON tournament_game_history(tournament_id, user_id);
   `);
 } catch (e) {
   console.error('Index creation error:', e);
@@ -423,6 +530,174 @@ export const vipQueries = {
   // 사용자 VIP 정보 조회
   getUserInfo: db.prepare(`
     SELECT id, username, vip_tier, vip_points, total_wagered FROM users WHERE id = ?
+  `)
+};
+
+// 토너먼트 관련 쿼리들
+export const tournamentQueries = {
+  // 토너먼트 CRUD
+  create: db.prepare(`
+    INSERT INTO tournaments (name, description, tournament_type, game_type, entry_fee, prize_pool, min_participants, max_participants, registration_start, registration_end, tournament_start, tournament_end, prize_distribution_type, total_prizes, vip_tier_required, min_balance_required, auto_start, created_by)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `),
+
+  findById: db.prepare(`
+    SELECT * FROM tournaments WHERE id = ?
+  `),
+
+  findAll: db.prepare(`
+    SELECT * FROM tournaments ORDER BY tournament_start DESC
+  `),
+
+  findByStatus: db.prepare(`
+    SELECT * FROM tournaments WHERE status = ? ORDER BY tournament_start ASC
+  `),
+
+  findByTypeAndStatus: db.prepare(`
+    SELECT * FROM tournaments WHERE tournament_type = ? AND status = ? ORDER BY tournament_start ASC
+  `),
+
+  findActive: db.prepare(`
+    SELECT * FROM tournaments WHERE status IN ('registration', 'ongoing') AND tournament_start > CURRENT_TIMESTAMP ORDER BY tournament_start ASC
+  `),
+
+  update: db.prepare(`
+    UPDATE tournaments
+    SET name = ?, description = ?, prize_pool = ?, min_participants = ?, max_participants = ?, updated_at = CURRENT_TIMESTAMP
+    WHERE id = ?
+  `),
+
+  updateStatus: db.prepare(`
+    UPDATE tournaments
+    SET status = ?, updated_at = CURRENT_TIMESTAMP
+    WHERE id = ?
+  `),
+
+  delete: db.prepare(`
+    DELETE FROM tournaments WHERE id = ?
+  `),
+
+  // 참가자 관리
+  addParticipant: db.prepare(`
+    INSERT INTO tournament_participants (tournament_id, user_id, entry_fee_paid, entry_fee_paid)
+    VALUES (?, ?, ?, ?)
+  `),
+
+  removeParticipant: db.prepare(`
+    DELETE FROM tournament_participants WHERE tournament_id = ? AND user_id = ?
+  `),
+
+  findParticipant: db.prepare(`
+    SELECT tp.*, u.username, u.vip_tier
+    FROM tournament_participants tp
+    JOIN users u ON tp.user_id = u.id
+    WHERE tp.tournament_id = ? AND tp.user_id = ?
+  `),
+
+  findParticipantsByTournament: db.prepare(`
+    SELECT tp.*, u.username, u.vip_tier
+    FROM tournament_participants tp
+    JOIN users u ON tp.user_id = u.id
+    WHERE tp.tournament_id = ?
+    ORDER BY tp.current_rank ASC, tp.net_profit DESC
+  `),
+
+  countParticipants: db.prepare(`
+    SELECT COUNT(*) as count FROM tournament_participants WHERE tournament_id = ? AND status = 'registered'
+  `),
+
+  updateParticipantStats: db.prepare(`
+    UPDATE tournament_participants
+    SET total_bet_amount = total_bet_amount + ?,
+        total_win_amount = total_win_amount + ?,
+        net_profit = net_profit + ? - ?,
+        games_played = games_played + 1,
+        updated_at = CURRENT_TIMESTAMP
+    WHERE tournament_id = ? AND user_id = ?
+  `),
+
+  updateParticipantRank: db.prepare(`
+    UPDATE tournament_participants
+    SET current_rank = ?, updated_at = CURRENT_TIMESTAMP
+    WHERE id = ?
+  `),
+
+  recalculateRankings: db.prepare(`
+    UPDATE tournament_participants
+    SET current_rank = (
+      SELECT COUNT(*) + 1
+      FROM tournament_participants tp2
+      WHERE tp2.tournament_id = tournament_participants.tournament_id
+        AND tp2.net_profit > tournament_participants.net_profit
+        AND tp2.status = 'registered'
+    ),
+    updated_at = CURRENT_TIMESTAMP
+    WHERE tournament_id = ? AND status = 'registered'
+  `),
+
+  findActiveTournamentsForUser: db.prepare(`
+    SELECT DISTINCT t.*
+    FROM tournaments t
+    JOIN tournament_participants tp ON t.id = tp.tournament_id
+    WHERE tp.user_id = ? AND t.status = 'ongoing'
+  `),
+
+  // 게임 기록
+  recordGame: db.prepare(`
+    INSERT INTO tournament_game_history (tournament_id, user_id, game_type, bet_amount, win_amount, result)
+    VALUES (?, ?, ?, ?, ?, ?)
+  `),
+
+  findGamesByTournament: db.prepare(`
+    SELECT tgh.*, u.username
+    FROM tournament_game_history tgh
+    JOIN users u ON tgh.user_id = u.id
+    WHERE tgh.tournament_id = ?
+    ORDER BY tgh.played_at DESC
+    LIMIT 100
+  `),
+
+  findGamesByUserAndTournament: db.prepare(`
+    SELECT * FROM tournament_game_history
+    WHERE tournament_id = ? AND user_id = ?
+    ORDER BY played_at DESC
+  `),
+
+  // 보상 관리
+  createPrize: db.prepare(`
+    INSERT INTO tournament_prizes (tournament_id, rank_from, rank_to, prize_type, prize_amount, prize_percentage)
+    VALUES (?, ?, ?, ?, ?, ?)
+  `),
+
+  createPrizes: db.prepare(`
+    INSERT INTO tournament_prizes (tournament_id, rank_from, rank_to, prize_type, prize_amount)
+    VALUES (?, ?, ?, ?, ?)
+  `),
+
+  findPrizesByTournament: db.prepare(`
+    SELECT tp.*, u.username
+    FROM tournament_prizes tp
+    LEFT JOIN users u ON tp.winner_id = u.id
+    WHERE tp.tournament_id = ?
+    ORDER BY tp.rank_from ASC
+  `),
+
+  findPrizesForRank: db.prepare(`
+    SELECT * FROM tournament_prizes
+    WHERE tournament_id = ? AND ? >= rank_from AND ? <= rank_to
+  `),
+
+  distributePrize: db.prepare(`
+    UPDATE tournament_prizes
+    SET winner_id = ?, is_distributed = TRUE, distributed_at = CURRENT_TIMESTAMP
+    WHERE id = ?
+  `),
+
+  findUndistributedPrizes: db.prepare(`
+    SELECT tp.*, tp.current_rank
+    FROM tournament_prizes tp
+    JOIN tournament_participants tp2 ON tp2.current_rank >= tp.rank_from AND tp2.current_rank <= tp.rank_to AND tp2.tournament_id = tp.tournament_id
+    WHERE tp.tournament_id = ? AND tp.is_distributed = FALSE
   `)
 };
 
