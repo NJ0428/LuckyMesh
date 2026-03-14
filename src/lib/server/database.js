@@ -199,6 +199,103 @@ const createTournamentGameHistoryTable = db.prepare(`
   )
 `);
 
+// 친구 테이블 생성
+const createFriendsTable = db.prepare(`
+  CREATE TABLE IF NOT EXISTS friends (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    friend_id INTEGER NOT NULL,
+    status TEXT NOT NULL DEFAULT 'pending',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+    FOREIGN KEY (friend_id) REFERENCES users (id) ON DELETE CASCADE,
+    UNIQUE(user_id, friend_id),
+    CHECK (user_id != friend_id)
+  )
+`);
+
+// 차단된 사용자 테이블 생성
+const createBlockedUsersTable = db.prepare(`
+  CREATE TABLE IF NOT EXISTS blocked_users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    blocker_id INTEGER NOT NULL,
+    blocked_id INTEGER NOT NULL,
+    reason TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (blocker_id) REFERENCES users (id) ON DELETE CASCADE,
+    FOREIGN KEY (blocked_id) REFERENCES users (id) ON DELETE CASCADE,
+    UNIQUE(blocker_id, blocked_id),
+    CHECK (blocker_id != blocked_id)
+  )
+`);
+
+// 사용자 온라인 상태 테이블 생성
+const createUserOnlineStatusTable = db.prepare(`
+  CREATE TABLE IF NOT EXISTS user_online_status (
+    user_id INTEGER PRIMARY KEY,
+    is_online BOOLEAN DEFAULT FALSE,
+    last_seen DATETIME DEFAULT CURRENT_TIMESTAMP,
+    current_game TEXT,
+    current_table_id INTEGER,
+    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+  )
+`);
+
+// 칩 선물 테이블 생성
+const createChipGiftsTable = db.prepare(`
+  CREATE TABLE IF NOT EXISTS chip_gifts (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    sender_id INTEGER NOT NULL,
+    receiver_id INTEGER NOT NULL,
+    amount INTEGER NOT NULL,
+    message TEXT,
+    status TEXT DEFAULT 'pending',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    expires_at DATETIME,
+    responded_at DATETIME,
+    FOREIGN KEY (sender_id) REFERENCES users (id) ON DELETE CASCADE,
+    FOREIGN KEY (receiver_id) REFERENCES users (id) ON DELETE CASCADE,
+    CHECK (sender_id != receiver_id),
+    CHECK (amount > 0)
+  )
+`);
+
+// 추천인 테이블 생성
+const createReferralsTable = db.prepare(`
+  CREATE TABLE IF NOT EXISTS referrals (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    referrer_id INTEGER NOT NULL,
+    referred_id INTEGER NOT NULL,
+    referral_code TEXT UNIQUE NOT NULL,
+    status TEXT DEFAULT 'pending',
+    reward_amount INTEGER DEFAULT 0,
+    reward_paid BOOLEAN DEFAULT FALSE,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    completed_at DATETIME,
+    rewarded_at DATETIME,
+    FOREIGN KEY (referrer_id) REFERENCES users (id) ON DELETE CASCADE,
+    FOREIGN KEY (referred_id) REFERENCES users (id) ON DELETE CASCADE,
+    UNIQUE(referrer_id, referred_id),
+    CHECK (referrer_id != referred_id)
+  )
+`);
+
+// 추천 코드 테이블 생성
+const createReferralCodesTable = db.prepare(`
+  CREATE TABLE IF NOT EXISTS referral_codes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL UNIQUE,
+    code TEXT NOT NULL UNIQUE,
+    is_active BOOLEAN DEFAULT TRUE,
+    usage_count INTEGER DEFAULT 0,
+    max_uses INTEGER DEFAULT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    expires_at DATETIME,
+    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+  )
+`);
+
 // 테이블 생성 실행
 createUserTable.run();
 createSessionTable.run();
@@ -210,6 +307,12 @@ createTournamentsTable.run();
 createTournamentParticipantsTable.run();
 createTournamentPrizesTable.run();
 createTournamentGameHistoryTable.run();
+createFriendsTable.run();
+createBlockedUsersTable.run();
+createUserOnlineStatusTable.run();
+createChipGiftsTable.run();
+createReferralsTable.run();
+createReferralCodesTable.run();
 
 // 기존 사용자들의 잔액이 0인 경우 10000으로 업데이트
 const updateZeroBalances = db.prepare(`
@@ -276,6 +379,22 @@ try {
     CREATE INDEX IF NOT EXISTS idx_tournament_participants_ranking ON tournament_participants(tournament_id, current_rank);
     CREATE INDEX IF NOT EXISTS idx_tournament_prizes_tournament ON tournament_prizes(tournament_id, is_distributed);
     CREATE INDEX IF NOT EXISTS idx_tournament_game_history_tournament ON tournament_game_history(tournament_id, user_id);
+  `);
+} catch (e) {
+  console.error('Index creation error:', e);
+}
+
+// 인덱스 생성 (친구 시스템)
+try {
+  db.exec(`
+    CREATE INDEX IF NOT EXISTS idx_friends_user_status ON friends(user_id, status);
+    CREATE INDEX IF NOT EXISTS idx_friends_friend_status ON friends(friend_id, status);
+    CREATE INDEX IF NOT EXISTS idx_blocked_users_blocker ON blocked_users(blocker_id);
+    CREATE INDEX IF NOT EXISTS idx_chip_gifts_receiver_status ON chip_gifts(receiver_id, status);
+    CREATE INDEX IF NOT EXISTS idx_chip_gifts_sender ON chip_gifts(sender_id);
+    CREATE INDEX IF NOT EXISTS idx_referrals_referrer ON referrals(referrer_id);
+    CREATE INDEX IF NOT EXISTS idx_referrals_code ON referrals(referral_code);
+    CREATE INDEX IF NOT EXISTS idx_user_online_status_online ON user_online_status(is_online, last_seen);
   `);
 } catch (e) {
   console.error('Index creation error:', e);
@@ -698,6 +817,328 @@ export const tournamentQueries = {
     FROM tournament_prizes tp
     JOIN tournament_participants tp2 ON tp2.current_rank >= tp.rank_from AND tp2.current_rank <= tp.rank_to AND tp2.tournament_id = tp.tournament_id
     WHERE tp.tournament_id = ? AND tp.is_distributed = FALSE
+  `)
+};
+
+// 친구 관련 쿼리들
+export const friendQueries = {
+  // 친구 요청 생성
+  createRequest: db.prepare(`
+    INSERT INTO friends (user_id, friend_id, status)
+    VALUES (?, ?, 'pending')
+  `),
+
+  // 친구 요청 수락
+  acceptRequest: db.prepare(`
+    UPDATE friends
+    SET status = 'accepted', updated_at = CURRENT_TIMESTAMP
+    WHERE id = ? AND friend_id = ? AND status = 'pending'
+  `),
+
+  // 친구 요청 거절
+  rejectRequest: db.prepare(`
+    UPDATE friends
+    SET status = 'rejected', updated_at = CURRENT_TIMESTAMP
+    WHERE id = ? AND friend_id = ? AND status = 'pending'
+  `),
+
+  // 친구 삭제
+  remove: db.prepare(`
+    DELETE FROM friends
+    WHERE ((user_id = ? AND friend_id = ?) OR (user_id = ? AND friend_id = ?))
+    AND status = 'accepted'
+  `),
+
+  // 사용자의 친구 목록 조회
+  findByUserId: db.prepare(`
+    SELECT
+      f.id,
+      f.user_id,
+      f.friend_id,
+      f.status,
+      f.created_at,
+      u_sender.username as sender_name,
+      u_sender.full_name as sender_full_name,
+      u_receiver.username as friend_name,
+      u_receiver.full_name as friend_full_name,
+      u_receiver.vip_tier as friend_vip_tier,
+      u_receiver.is_online as friend_is_online,
+      u_receiver.last_seen as friend_last_seen
+    FROM friends f
+    JOIN users u_sender ON f.user_id = u_sender.id
+    JOIN users u_receiver ON f.friend_id = u_receiver.id
+    LEFT JOIN user_online_status uos ON u_receiver.id = uos.user_id
+    WHERE f.user_id = ? OR f.friend_id = ?
+    ORDER BY f.created_at DESC
+  `),
+
+  // 대기 중인 친구 요청 조회
+  findPending: db.prepare(`
+    SELECT
+      f.*,
+      u.username as sender_name,
+      u.full_name as sender_full_name,
+      u.vip_tier as sender_vip_tier
+    FROM friends f
+    JOIN users u ON f.user_id = u.id
+    WHERE f.friend_id = ? AND f.status = 'pending'
+    ORDER BY f.created_at DESC
+  `),
+
+  // 사용자명으로 사용자 검색
+  searchByUsername: db.prepare(`
+    SELECT id, username, full_name, vip_tier
+    FROM users
+    WHERE username LIKE ? AND id != ?
+    LIMIT 20
+  `),
+
+  // 이미 친구인지 확인
+  checkExisting: db.prepare(`
+    SELECT * FROM friends
+    WHERE ((user_id = ? AND friend_id = ?) OR (user_id = ? AND friend_id = ?))
+    AND status IN ('pending', 'accepted')
+  `),
+
+  // 친구 수 카운트
+  countFriends: db.prepare(`
+    SELECT COUNT(*) as count
+    FROM friends
+    WHERE (user_id = ? OR friend_id = ?) AND status = 'accepted'
+  `)
+};
+
+// 차단 관련 쿼리들
+export const blockQueries = {
+  // 차단 추가
+  block: db.prepare(`
+    INSERT INTO blocked_users (blocker_id, blocked_id, reason)
+    VALUES (?, ?, ?)
+  `),
+
+  // 차단 해제
+  unblock: db.prepare(`
+    DELETE FROM blocked_users
+    WHERE blocker_id = ? AND blocked_id = ?
+  `),
+
+  // 차단 목록 조회
+  findByBlockerId: db.prepare(`
+    SELECT
+      bu.*,
+      u.username as blocked_name,
+      u.full_name as blocked_full_name
+    FROM blocked_users bu
+    JOIN users u ON bu.blocked_id = u.id
+    WHERE bu.blocker_id = ?
+    ORDER BY bu.created_at DESC
+  `),
+
+  // 차단 여부 확인
+  checkBlocked: db.prepare(`
+    SELECT * FROM blocked_users
+    WHERE blocker_id = ? AND blocked_id = ?
+  `),
+
+  // 서로 차단 여부 확인
+  checkBidirectionalBlocked: db.prepare(`
+    SELECT * FROM blocked_users
+    WHERE (blocker_id = ? AND blocked_id = ?)
+       OR (blocker_id = ? AND blocked_id = ?)
+  `)
+};
+
+// 온라인 상태 관련 쿼리들
+export const onlineStatusQueries = {
+  // 온라인 상태 업데이트
+  updateStatus: db.prepare(`
+    INSERT INTO user_online_status (user_id, is_online, last_seen, current_game)
+    VALUES (?, TRUE, CURRENT_TIMESTAMP, ?)
+    ON CONFLICT(user_id) DO UPDATE SET
+      is_online = TRUE,
+      last_seen = CURRENT_TIMESTAMP,
+      current_game = excluded.current_game
+  `),
+
+  // 오프라인 상태로 변경
+  setOffline: db.prepare(`
+    UPDATE user_online_status
+    SET is_online = FALSE, last_seen = CURRENT_TIMESTAMP, current_game = NULL
+    WHERE user_id = ?
+  `),
+
+  // 친구들의 온라인 상태 조회
+  findFriendsStatus: db.prepare(`
+    SELECT
+      uos.user_id,
+      uos.is_online,
+      uos.last_seen,
+      uos.current_game,
+      u.username,
+      u.full_name
+    FROM user_online_status uos
+    JOIN users u ON uos.user_id = u.id
+    WHERE uos.user_id IN (${Array(100).fill('?').join(',')})
+  `),
+
+  // 특정 사용자의 온라인 상태 조회
+  findByUserId: db.prepare(`
+    SELECT uos.*, u.username, u.full_name
+    FROM user_online_status uos
+    JOIN users u ON uos.user_id = u.id
+    WHERE uos.user_id = ?
+  `),
+
+  // 오래된 온라인 상태 정리 (하루 이상 업데이트 없는 온라인 상태를 오프라인으로)
+  cleanupOldStatus: db.prepare(`
+    UPDATE user_online_status
+    SET is_online = FALSE, current_game = NULL
+    WHERE is_online = TRUE AND last_seen < datetime('now', '-5 minutes')
+  `)
+};
+
+// 칩 선물 관련 쿼리들
+export const chipGiftQueries = {
+  // 선물 생성
+  create: db.prepare(`
+    INSERT INTO chip_gifts (sender_id, receiver_id, amount, message, expires_at)
+    VALUES (?, ?, ?, ?, datetime('now', '+48 hours'))
+  `),
+
+  // 대기 중인 선물 조회 (수신자)
+  findPendingByReceiver: db.prepare(`
+    SELECT
+      cg.*,
+      u.username as sender_name,
+      u.full_name as sender_full_name
+    FROM chip_gifts cg
+    JOIN users u ON cg.sender_id = u.id
+    WHERE cg.receiver_id = ? AND cg.status = 'pending' AND cg.expires_at > CURRENT_TIMESTAMP
+    ORDER BY cg.created_at DESC
+  `),
+
+  // 선물 내역 조회
+  findByUser: db.prepare(`
+    SELECT
+      cg.*,
+      u_sender.username as sender_name,
+      u_sender.full_name as sender_full_name,
+      u_receiver.username as receiver_name,
+      u_receiver.full_name as receiver_full_name
+    FROM chip_gifts cg
+    JOIN users u_sender ON cg.sender_id = u_sender.id
+    JOIN users u_receiver ON cg.receiver_id = u_receiver.id
+    WHERE cg.sender_id = ? OR cg.receiver_id = ?
+    ORDER BY cg.created_at DESC
+    LIMIT 50
+  `),
+
+  // 선물 수락
+  accept: db.prepare(`
+    UPDATE chip_gifts
+    SET status = 'accepted', responded_at = CURRENT_TIMESTAMP
+    WHERE id = ? AND receiver_id = ? AND status = 'pending'
+  `),
+
+  // 선물 거절
+  reject: db.prepare(`
+    UPDATE chip_gifts
+    SET status = 'rejected', responded_at = CURRENT_TIMESTAMP
+    WHERE id = ? AND receiver_id = ? AND status = 'pending'
+  `),
+
+  // ID로 선물 조회
+  findById: db.prepare(`
+    SELECT * FROM chip_gifts WHERE id = ?
+  `),
+
+  // 오늘 보낸 선물 수 카운트
+  countTodayGifts: db.prepare(`
+    SELECT COUNT(*) as count
+    FROM chip_gifts
+    WHERE sender_id = ? AND DATE(created_at) = DATE(CURRENT_TIMESTAMP)
+  `),
+
+  // 만료된 선물 찾기
+  findExpired: db.prepare(`
+    SELECT * FROM chip_gifts
+    WHERE status = 'pending' AND expires_at <= CURRENT_TIMESTAMP
+  `)
+};
+
+// 추천인 관련 쿼리들
+export const referralQueries = {
+  // 추천 코드 생성
+  createCode: db.prepare(`
+    INSERT INTO referral_codes (user_id, code, is_active, usage_count, max_uses)
+    VALUES (?, ?, TRUE, 0, NULL)
+  `),
+
+  // 추천 코드 조회
+  findCodeByUserId: db.prepare(`
+    SELECT * FROM referral_codes WHERE user_id = ?
+  `),
+
+  // 추천 코드로 조회
+  findCodeByCode: db.prepare(`
+    SELECT rc.*, u.username, u.full_name
+    FROM referral_codes rc
+    JOIN users u ON rc.user_id = u.id
+    WHERE rc.code = ? AND rc.is_active = TRUE AND (rc.expires_at IS NULL OR rc.expires_at > CURRENT_TIMESTAMP)
+  `),
+
+  // 추천 코드 사용 횟수 증가
+  incrementCodeUsage: db.prepare(`
+    UPDATE referral_codes
+    SET usage_count = usage_count + 1
+    WHERE code = ?
+  `),
+
+  // 추천 생성
+  createReferral: db.prepare(`
+    INSERT INTO referrals (referrer_id, referred_id, referral_code, status, reward_amount)
+    VALUES (?, ?, ?, 'completed', 50000)
+  `),
+
+  // 추천인의 추천 목록 조회
+  findByReferrerId: db.prepare(`
+    SELECT
+      r.*,
+      u_referrer.username as referrer_name,
+      u_referred.username as referred_name,
+      u_referred.full_name as referred_full_name
+    FROM referrals r
+    JOIN users u_referrer ON r.referrer_id = u_referrer.id
+    JOIN users u_referred ON r.referred_id = u_referred.id
+    WHERE r.referrer_id = ?
+    ORDER BY r.created_at DESC
+  `),
+
+  // 추천 통계 조회
+  getStats: db.prepare(`
+    SELECT
+      COUNT(*) as total_referrals,
+      COUNT(CASE WHEN reward_paid = TRUE THEN 1 END) as paid_referrals,
+      SUM(reward_amount) as total_rewards
+    FROM referrals
+    WHERE referrer_id = ?
+  `),
+
+  // 보상 지급 상태 업데이트
+  markRewardPaid: db.prepare(`
+    UPDATE referrals
+    SET reward_paid = TRUE, rewarded_at = CURRENT_TIMESTAMP
+    WHERE id = ?
+  `),
+
+  // 추천 코드로 추천 내역 조회
+  findByCode: db.prepare(`
+    SELECT * FROM referrals WHERE referral_code = ?
+  `),
+
+  // 사용자가 이미 추천되었는지 확인
+  checkReferred: db.prepare(`
+    SELECT * FROM referrals WHERE referred_id = ?
   `)
 };
 

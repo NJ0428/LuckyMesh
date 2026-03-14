@@ -14,6 +14,8 @@
     { href: '/sicbo', label: '다이사이', icon: '🎲' },
     { href: '/slots', label: '슬롯', icon: '🍒' },
     { href: '/tournaments', label: '토너먼트', icon: '🏆' },
+    { href: '/friends', label: '친구', icon: '👥' },
+    { href: '/referrals', label: '초대', icon: '🎁' },
     { href: '/vip', label: 'VIP', icon: '👑' }
   ];
 
@@ -126,6 +128,12 @@
                   <a href="/tournaments" class="block px-4 py-2 text-sm text-gray-600 hover:bg-white/20 hover:text-primary-soft-purple transition-colors duration-200 font-poppins">
                     🏆 토너먼트
                   </a>
+                  <a href="/friends" class="block px-4 py-2 text-sm text-gray-600 hover:bg-white/20 hover:text-primary-soft-purple transition-colors duration-200 font-poppins">
+                    👥 친구 관리
+                  </a>
+                  <a href="/referrals" class="block px-4 py-2 text-sm text-gray-600 hover:bg-white/20 hover:text-primary-soft-purple transition-colors duration-200 font-poppins">
+                    🎁 친구 초대
+                  </a>
                   <a href="/vip" class="block px-4 py-2 text-sm text-gray-600 hover:bg-white/20 hover:text-primary-soft-purple transition-colors duration-200 font-poppins">
                     👑 VIP 라운지
                   </a>
@@ -220,6 +228,12 @@
               </a>
               <a href="/tournaments" class="block px-3 py-2 rounded-md text-white hover:bg-casino-gold/20 hover:text-casino-gold transition-colors duration-200">
                 🏆 토너먼트
+              </a>
+              <a href="/friends" class="block px-3 py-2 rounded-md text-white hover:bg-casino-gold/20 hover:text-casino-gold transition-colors duration-200">
+                👥 친구 관리
+              </a>
+              <a href="/referrals" class="block px-3 py-2 rounded-md text-white hover:bg-casino-gold/20 hover:text-casino-gold transition-colors duration-200">
+                🎁 친구 초대
               </a>
               <a href="/vip" class="block px-3 py-2 rounded-md text-white hover:bg-casino-gold/20 hover:text-casino-gold transition-colors duration-200">
                 👑 VIP 라운지
