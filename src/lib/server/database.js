@@ -296,6 +296,58 @@ const createReferralCodesTable = db.prepare(`
   )
 `);
 
+// 업적 정의 테이블 생성
+const createAchievementsTable = db.prepare(`
+  CREATE TABLE IF NOT EXISTS achievements (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    achievement_id TEXT UNIQUE NOT NULL,
+    title TEXT NOT NULL,
+    description TEXT NOT NULL,
+    icon TEXT NOT NULL,
+    category TEXT NOT NULL,
+    tier TEXT NOT NULL,
+    reward_amount INTEGER DEFAULT 0,
+    requirements_type TEXT NOT NULL,
+    requirements_value INTEGER NOT NULL,
+    game_type TEXT NOT NULL,
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  )
+`);
+
+// 사용자 업적 진행 테이블 생성
+const createUserAchievementsTable = db.prepare(`
+  CREATE TABLE IF NOT EXISTS user_achievements (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    achievement_id INTEGER NOT NULL,
+    progress INTEGER DEFAULT 0,
+    completed_at DATETIME,
+    reward_claimed BOOLEAN DEFAULT FALSE,
+    claimed_at DATETIME,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+    FOREIGN KEY (achievement_id) REFERENCES achievements (id) ON DELETE CASCADE,
+    UNIQUE(user_id, achievement_id)
+  )
+`);
+
+// 업적 보상 지급 내역 테이블 생성
+const createAchievementRewardsTable = db.prepare(`
+  CREATE TABLE IF NOT EXISTS achievement_rewards (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_achievement_id INTEGER NOT NULL,
+    reward_type TEXT NOT NULL,
+    reward_amount INTEGER NOT NULL,
+    is_distributed BOOLEAN DEFAULT FALSE,
+    distributed_at DATETIME,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_achievement_id) REFERENCES user_achievements (id) ON DELETE CASCADE
+  )
+`);
+
 // 테이블 생성 실행
 createUserTable.run();
 createSessionTable.run();
@@ -313,6 +365,9 @@ createUserOnlineStatusTable.run();
 createChipGiftsTable.run();
 createReferralsTable.run();
 createReferralCodesTable.run();
+createAchievementsTable.run();
+createUserAchievementsTable.run();
+createAchievementRewardsTable.run();
 
 // 기존 사용자들의 잔액이 0인 경우 10000으로 업데이트
 const updateZeroBalances = db.prepare(`
@@ -395,6 +450,20 @@ try {
     CREATE INDEX IF NOT EXISTS idx_referrals_referrer ON referrals(referrer_id);
     CREATE INDEX IF NOT EXISTS idx_referrals_code ON referrals(referral_code);
     CREATE INDEX IF NOT EXISTS idx_user_online_status_online ON user_online_status(is_online, last_seen);
+  `);
+} catch (e) {
+  console.error('Index creation error:', e);
+}
+
+// 인덱스 생성 (업적 시스템)
+try {
+  db.exec(`
+    CREATE INDEX IF NOT EXISTS idx_achievements_game_type ON achievements(game_type, is_active);
+    CREATE INDEX IF NOT EXISTS idx_achievements_category ON achievements(category, tier);
+    CREATE INDEX IF NOT EXISTS idx_user_achievements_user_id ON user_achievements(user_id);
+    CREATE INDEX IF NOT EXISTS idx_user_achievements_completed ON user_achievements(completed_at, reward_claimed);
+    CREATE INDEX IF NOT EXISTS idx_user_achievements_achievement ON user_achievements(user_id, achievement_id);
+    CREATE INDEX IF NOT EXISTS idx_achievement_rewards_user_achievement ON achievement_rewards(user_achievement_id, is_distributed);
   `);
 } catch (e) {
   console.error('Index creation error:', e);
@@ -1139,6 +1208,193 @@ export const referralQueries = {
   // 사용자가 이미 추천되었는지 확인
   checkReferred: db.prepare(`
     SELECT * FROM referrals WHERE referred_id = ?
+  `)
+};
+
+// 업적 관련 쿼리들
+export const achievementQueries = {
+  // 업적 정의 CRUD
+  create: db.prepare(`
+    INSERT INTO achievements (achievement_id, title, description, icon, category, tier, reward_amount, requirements_type, requirements_value, game_type)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `),
+
+  findById: db.prepare(`
+    SELECT * FROM achievements WHERE id = ?
+  `),
+
+  findByAchievementId: db.prepare(`
+    SELECT * FROM achievements WHERE achievement_id = ?
+  `),
+
+  findAll: db.prepare(`
+    SELECT * FROM achievements WHERE is_active = TRUE ORDER BY game_type, tier, category
+  `),
+
+  findByGameType: db.prepare(`
+    SELECT * FROM achievements WHERE game_type = ? AND is_active = TRUE ORDER BY tier, category
+  `),
+
+  findByCategory: db.prepare(`
+    SELECT * FROM achievements WHERE category = ? AND is_active = TRUE ORDER BY tier
+  `),
+
+  findByTier: db.prepare(`
+    SELECT * FROM achievements WHERE tier = ? AND is_active = TRUE ORDER BY game_type, category
+  `),
+
+  findByGameAndTier: db.prepare(`
+    SELECT * FROM achievements WHERE game_type = ? AND tier = ? AND is_active = TRUE ORDER BY category
+  `),
+
+  update: db.prepare(`
+    UPDATE achievements
+    SET title = ?, description = ?, icon = ?, reward_amount = ?, updated_at = CURRENT_TIMESTAMP
+    WHERE id = ?
+  `),
+
+  deactivate: db.prepare(`
+    UPDATE achievements SET is_active = FALSE, updated_at = CURRENT_TIMESTAMP WHERE id = ?
+  `),
+
+  // 사용자 업적 진행 관리
+  createUserAchievement: db.prepare(`
+    INSERT INTO user_achievements (user_id, achievement_id, progress)
+    VALUES (?, ?, 0)
+  `),
+
+  findUserAchievement: db.prepare(`
+    SELECT ua.*, a.achievement_id, a.title, a.description, a.icon, a.category, a.tier, a.reward_amount, a.requirements_type, a.requirements_value, a.game_type
+    FROM user_achievements ua
+    JOIN achievements a ON ua.achievement_id = a.id
+    WHERE ua.user_id = ? AND ua.achievement_id = ?
+  `),
+
+  findUserAchievements: db.prepare(`
+    SELECT ua.*, a.achievement_id, a.title, a.description, a.icon, a.category, a.tier, a.reward_amount, a.requirements_type, a.requirements_value, a.game_type
+    FROM user_achievements ua
+    JOIN achievements a ON ua.achievement_id = a.id
+    WHERE ua.user_id = ?
+    ORDER BY ua.completed_at DESC, ua.updated_at DESC
+  `),
+
+  findUserAchievementsByGame: db.prepare(`
+    SELECT ua.*, a.achievement_id, a.title, a.description, a.icon, a.category, a.tier, a.reward_amount, a.requirements_type, a.requirements_value, a.game_type
+    FROM user_achievements ua
+    JOIN achievements a ON ua.achievement_id = a.id
+    WHERE ua.user_id = ? AND a.game_type = ?
+    ORDER BY ua.completed_at DESC, ua.updated_at DESC
+  `),
+
+  findCompletedAchievements: db.prepare(`
+    SELECT ua.*, a.achievement_id, a.title, a.description, a.icon, a.category, a.tier, a.reward_amount, a.requirements_type, a.requirements_value, a.game_type
+    FROM user_achievements ua
+    JOIN achievements a ON ua.achievement_id = a.id
+    WHERE ua.user_id = ? AND ua.completed_at IS NOT NULL
+    ORDER BY ua.completed_at DESC
+  `),
+
+  findPendingClaims: db.prepare(`
+    SELECT ua.*, a.achievement_id, a.title, a.description, a.icon, a.category, a.tier, a.reward_amount, a.requirements_type, a.requirements_value, a.game_type
+    FROM user_achievements ua
+    JOIN achievements a ON ua.achievement_id = a.id
+    WHERE ua.user_id = ? AND ua.completed_at IS NOT NULL AND ua.reward_claimed = FALSE
+    ORDER BY ua.completed_at DESC
+  `),
+
+  findInProgressAchievements: db.prepare(`
+    SELECT ua.*, a.achievement_id, a.title, a.description, a.icon, a.category, a.tier, a.reward_amount, a.requirements_type, a.requirements_value, a.game_type
+    FROM user_achievements ua
+    JOIN achievements a ON ua.achievement_id = a.id
+    WHERE ua.user_id = ? AND ua.completed_at IS NULL
+    ORDER BY ua.updated_at DESC
+  `),
+
+  updateProgress: db.prepare(`
+    UPDATE user_achievements
+    SET progress = ?, updated_at = CURRENT_TIMESTAMP
+    WHERE id = ?
+  `),
+
+  markCompleted: db.prepare(`
+    UPDATE user_achievements
+    SET completed_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
+    WHERE id = ?
+  `),
+
+  markRewardClaimed: db.prepare(`
+    UPDATE user_achievements
+    SET reward_claimed = TRUE, claimed_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
+    WHERE id = ? AND user_id = ?
+  `),
+
+  getOrInitializeUserAchievement: db.prepare(`
+    INSERT INTO user_achievements (user_id, achievement_id, progress)
+    VALUES (?, ?, 0)
+    ON CONFLICT(user_id, achievement_id) DO UPDATE SET updated_at = CURRENT_TIMESTAMP
+    RETURNING *
+  `),
+
+  // 업적 보상 관리
+  createReward: db.prepare(`
+    INSERT INTO achievement_rewards (user_achievement_id, reward_type, reward_amount, is_distributed, distributed_at)
+    VALUES (?, ?, ?, TRUE, CURRENT_TIMESTAMP)
+  `),
+
+  findRewardByUserAchievement: db.prepare(`
+    SELECT * FROM achievement_rewards WHERE user_achievement_id = ?
+  `),
+
+  findUserRewards: db.prepare(`
+    SELECT ar.*, ua.user_id, a.achievement_id, a.title
+    FROM achievement_rewards ar
+    JOIN user_achievements ua ON ar.user_achievement_id = ua.id
+    JOIN achievements a ON ua.achievement_id = a.id
+    WHERE ua.user_id = ?
+    ORDER BY ar.created_at DESC
+  `),
+
+  markDistributed: db.prepare(`
+    UPDATE achievement_rewards
+    SET is_distributed = TRUE, distributed_at = CURRENT_TIMESTAMP
+    WHERE id = ?
+  `),
+
+  // 업적 통계
+  getUserAchievementStats: db.prepare(`
+    SELECT
+      COUNT(*) as total_achievements,
+      COUNT(CASE WHEN completed_at IS NOT NULL THEN 1 END) as completed_achievements,
+      COUNT(CASE WHEN completed_at IS NOT NULL AND reward_claimed = FALSE THEN 1 END) as pending_claims,
+      SUM(CASE WHEN reward_claimed = TRUE THEN a.reward_amount ELSE 0 END) as total_claimed_rewards,
+      SUM(CASE WHEN completed_at IS NOT NULL AND reward_claimed = FALSE THEN a.reward_amount ELSE 0 END) as pending_rewards
+    FROM user_achievements ua
+    JOIN achievements a ON ua.achievement_id = a.id
+    WHERE ua.user_id = ?
+  `),
+
+  getAchievementStatsByGame: db.prepare(`
+    SELECT
+      a.game_type,
+      COUNT(*) as total_achievements,
+      COUNT(CASE WHEN ua.completed_at IS NOT NULL THEN 1 END) as completed_achievements,
+      COUNT(CASE WHEN ua.completed_at IS NULL THEN 1 END) as in_progress,
+      SUM(CASE WHEN ua.reward_claimed = TRUE THEN a.reward_amount ELSE 0 END) as total_claimed
+    FROM user_achievements ua
+    JOIN achievements a ON ua.achievement_id = a.id
+    WHERE ua.user_id = ?
+    GROUP BY a.game_type
+  `),
+
+  getTierStats: db.prepare(`
+    SELECT
+      a.tier,
+      COUNT(*) as total,
+      COUNT(CASE WHEN ua.completed_at IS NOT NULL THEN 1 END) as completed
+    FROM user_achievements ua
+    JOIN achievements a ON ua.achievement_id = a.id
+    WHERE ua.user_id = ?
+    GROUP BY a.tier
   `)
 };
 
