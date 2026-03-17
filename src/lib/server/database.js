@@ -348,6 +348,105 @@ const createAchievementRewardsTable = db.prepare(`
   )
 `);
 
+// 일일 미션 정의 테이블 생성
+const createDailyMissionsTable = db.prepare(`
+  CREATE TABLE IF NOT EXISTS daily_missions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    mission_id TEXT UNIQUE NOT NULL,
+    title TEXT NOT NULL,
+    description TEXT NOT NULL,
+    icon TEXT NOT NULL,
+    category TEXT NOT NULL,
+    difficulty TEXT NOT NULL,
+    requirement_type TEXT NOT NULL,
+    requirement_value INTEGER NOT NULL,
+    game_type TEXT NOT NULL,
+    reward_chips INTEGER NOT NULL,
+    reward_exp INTEGER DEFAULT 0,
+    is_active BOOLEAN DEFAULT TRUE,
+    display_order INTEGER DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  )
+`);
+
+// 사용자 일일 미션 진행 테이블 생성
+const createUserDailyMissionsTable = db.prepare(`
+  CREATE TABLE IF NOT EXISTS user_daily_missions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    mission_id INTEGER NOT NULL,
+    mission_date DATE NOT NULL,
+    progress INTEGER DEFAULT 0,
+    completed_at DATETIME,
+    reward_claimed BOOLEAN DEFAULT FALSE,
+    claimed_at DATETIME,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+    FOREIGN KEY (mission_id) REFERENCES daily_missions (id) ON DELETE CASCADE,
+    UNIQUE(user_id, mission_id, mission_date)
+  )
+`);
+
+// 챌린지(주간/월간) 정의 테이블 생성
+const createChallengesTable = db.prepare(`
+  CREATE TABLE IF NOT EXISTS challenges (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    challenge_id TEXT UNIQUE NOT NULL,
+    title TEXT NOT NULL,
+    description TEXT NOT NULL,
+    icon TEXT NOT NULL,
+    challenge_type TEXT NOT NULL,
+    category TEXT NOT NULL,
+    requirement_type TEXT NOT NULL,
+    requirement_value INTEGER NOT NULL,
+    game_type TEXT NOT NULL,
+    reward_chips INTEGER NOT NULL,
+    reward_exp INTEGER DEFAULT 0,
+    bonus_rewards TEXT,
+    is_active BOOLEAN DEFAULT TRUE,
+    start_date DATE NOT NULL,
+    end_date DATE NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  )
+`);
+
+// 사용자 챌린지 참여 테이블 생성
+const createUserChallengesTable = db.prepare(`
+  CREATE TABLE IF NOT EXISTS user_challenges (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    challenge_id INTEGER NOT NULL,
+    progress INTEGER DEFAULT 0,
+    milestone_reached INTEGER DEFAULT 0,
+    completed_at DATETIME,
+    reward_claimed BOOLEAN DEFAULT FALSE,
+    claimed_at DATETIME,
+    enrolled_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+    FOREIGN KEY (challenge_id) REFERENCES challenges (id) ON DELETE CASCADE,
+    UNIQUE(user_id, challenge_id)
+  )
+`);
+
+// 미션 스트릭 추적 테이블 생성
+const createMissionStreaksTable = db.prepare(`
+  CREATE TABLE IF NOT EXISTS mission_streaks (
+    user_id INTEGER PRIMARY KEY,
+    current_streak INTEGER DEFAULT 0,
+    longest_streak INTEGER DEFAULT 0,
+    last_completion_date DATE,
+    total_completed_days INTEGER DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+  )
+`);
+
 // 테이블 생성 실행
 createUserTable.run();
 createSessionTable.run();
@@ -368,6 +467,11 @@ createReferralCodesTable.run();
 createAchievementsTable.run();
 createUserAchievementsTable.run();
 createAchievementRewardsTable.run();
+createDailyMissionsTable.run();
+createUserDailyMissionsTable.run();
+createChallengesTable.run();
+createUserChallengesTable.run();
+createMissionStreaksTable.run();
 
 // 기존 사용자들의 잔액이 0인 경우 10000으로 업데이트
 const updateZeroBalances = db.prepare(`
@@ -464,6 +568,22 @@ try {
     CREATE INDEX IF NOT EXISTS idx_user_achievements_completed ON user_achievements(completed_at, reward_claimed);
     CREATE INDEX IF NOT EXISTS idx_user_achievements_achievement ON user_achievements(user_id, achievement_id);
     CREATE INDEX IF NOT EXISTS idx_achievement_rewards_user_achievement ON achievement_rewards(user_achievement_id, is_distributed);
+  `);
+} catch (e) {
+  console.error('Index creation error:', e);
+}
+
+// 인덱스 생성 (미션 및 챌린지 시스템)
+try {
+  db.exec(`
+    CREATE INDEX IF NOT EXISTS idx_daily_missions_difficulty ON daily_missions(difficulty, is_active);
+    CREATE INDEX IF NOT EXISTS idx_daily_missions_category ON daily_missions(category, game_type);
+    CREATE INDEX IF NOT EXISTS idx_user_daily_missions_user_date ON user_daily_missions(user_id, mission_date);
+    CREATE INDEX IF NOT EXISTS idx_user_daily_missions_completed ON user_daily_missions(completed_at, reward_claimed);
+    CREATE INDEX IF NOT EXISTS idx_challenges_type_active ON challenges(challenge_type, is_active, start_date, end_date);
+    CREATE INDEX IF NOT EXISTS idx_user_challenges_user ON user_challenges(user_id);
+    CREATE INDEX IF NOT EXISTS idx_user_challenges_completed ON user_challenges(completed_at, reward_claimed);
+    CREATE INDEX IF NOT EXISTS idx_mission_streaks_streak ON mission_streaks(current_streak, last_completion_date);
   `);
 } catch (e) {
   console.error('Index creation error:', e);
@@ -1395,6 +1515,178 @@ export const achievementQueries = {
     JOIN achievements a ON ua.achievement_id = a.id
     WHERE ua.user_id = ?
     GROUP BY a.tier
+  `)
+};
+
+// 미션 관련 쿼리들
+export const missionQueries = {
+  // 일일 미션 정의 관리
+  create: db.prepare(`
+    INSERT INTO daily_missions (mission_id, title, description, icon, category, difficulty, requirement_type, requirement_value, game_type, reward_chips, reward_exp, display_order)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `),
+
+  findAll: db.prepare(`
+    SELECT * FROM daily_missions WHERE is_active = TRUE ORDER BY display_order ASC, difficulty ASC
+  `),
+
+  findByDifficulty: db.prepare(`
+    SELECT * FROM daily_missions WHERE is_active = TRUE AND difficulty = ? ORDER BY display_order ASC
+  `),
+
+  findById: db.prepare(`
+    SELECT * FROM daily_missions WHERE id = ?
+  `),
+
+  findByMissionId: db.prepare(`
+    SELECT * FROM daily_missions WHERE mission_id = ?
+  `),
+
+  // 사용자 일일 미션 관리
+  getUserDailyMissions: db.prepare(`
+    SELECT udm.*, dm.title, dm.description, dm.icon, dm.category, dm.difficulty,
+           dm.requirement_type, dm.requirement_value, dm.game_type, dm.reward_chips, dm.reward_exp
+    FROM user_daily_missions udm
+    JOIN daily_missions dm ON udm.mission_id = dm.id
+    WHERE udm.user_id = ? AND udm.mission_date = ?
+    ORDER BY dm.difficulty ASC, dm.display_order ASC
+  `),
+
+  getOrCreateUserMission: db.prepare(`
+    INSERT INTO user_daily_missions (user_id, mission_id, mission_date, progress)
+    VALUES (?, ?, ?, 0)
+    ON CONFLICT(user_id, mission_id, mission_date) DO UPDATE SET updated_at = CURRENT_TIMESTAMP
+    RETURNING *
+  `),
+
+  findUserMission: db.prepare(`
+    SELECT * FROM user_daily_missions WHERE user_id = ? AND mission_id = ? AND mission_date = ?
+  `),
+
+  updateProgress: db.prepare(`
+    UPDATE user_daily_missions
+    SET progress = ?, updated_at = CURRENT_TIMESTAMP
+    WHERE id = ?
+  `),
+
+  markCompleted: db.prepare(`
+    UPDATE user_daily_missions
+    SET completed_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
+    WHERE id = ?
+  `),
+
+  markRewardClaimed: db.prepare(`
+    UPDATE user_daily_missions
+    SET reward_claimed = TRUE, claimed_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
+    WHERE id = ? AND user_id = ?
+  `),
+
+  getCompletedMissions: db.prepare(`
+    SELECT udm.*, dm.title, dm.reward_chips
+    FROM user_daily_missions udm
+    JOIN daily_missions dm ON udm.mission_id = dm.id
+    WHERE udm.user_id = ? AND udm.completed_at IS NOT NULL AND udm.reward_claimed = FALSE
+  `),
+
+  // 챌린지 관리
+  createChallenge: db.prepare(`
+    INSERT INTO challenges (challenge_id, title, description, icon, challenge_type, category, requirement_type, requirement_value, game_type, reward_chips, reward_exp, bonus_rewards, start_date, end_date)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `),
+
+  findAllChallenges: db.prepare(`
+    SELECT * FROM challenges WHERE is_active = TRUE ORDER BY challenge_type, start_date DESC
+  `),
+
+  findActiveChallenges: db.prepare(`
+    SELECT * FROM challenges
+    WHERE is_active = TRUE AND start_date <= CURRENT_DATE AND end_date >= CURRENT_DATE AND challenge_type = ?
+    ORDER BY start_date DESC
+  `),
+
+  findChallengeById: db.prepare(`
+    SELECT * FROM challenges WHERE id = ?
+  `),
+
+  // 사용자 챌린지 관리
+  enrollUser: db.prepare(`
+    INSERT INTO user_challenges (user_id, challenge_id, progress)
+    VALUES (?, ?, 0)
+  `),
+
+  getUserChallenges: db.prepare(`
+    SELECT uc.*, c.title, c.description, c.icon, c.challenge_type, c.category,
+           c.requirement_type, c.requirement_value, c.game_type, c.reward_chips, c.reward_exp,
+           c.start_date, c.end_date
+    FROM user_challenges uc
+    JOIN challenges c ON uc.challenge_id = c.id
+    WHERE uc.user_id = ?
+    ORDER BY c.challenge_type, c.end_date ASC
+  `),
+
+  findUserChallenge: db.prepare(`
+    SELECT * FROM user_challenges WHERE user_id = ? AND challenge_id = ?
+  `),
+
+  updateChallengeProgress: db.prepare(`
+    UPDATE user_challenges
+    SET progress = ?, milestone_reached = ?, updated_at = CURRENT_TIMESTAMP
+    WHERE id = ?
+  `),
+
+  markChallengeCompleted: db.prepare(`
+    UPDATE user_challenges
+    SET completed_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
+    WHERE id = ?
+  `),
+
+  markChallengeRewardClaimed: db.prepare(`
+    UPDATE user_challenges
+    SET reward_claimed = TRUE, claimed_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
+    WHERE id = ? AND user_id = ?
+  `),
+
+  getCompletedChallenges: db.prepare(`
+    SELECT uc.*, c.title, c.reward_chips
+    FROM user_challenges uc
+    JOIN challenges c ON uc.challenge_id = c.id
+    WHERE uc.user_id = ? AND uc.completed_at IS NOT NULL AND uc.reward_claimed = FALSE
+  `),
+
+  // 스트릭 관리
+  getStreak: db.prepare(`
+    SELECT * FROM mission_streaks WHERE user_id = ?
+  `),
+
+  createStreak: db.prepare(`
+    INSERT INTO mission_streaks (user_id, current_streak, longest_streak, total_completed_days)
+    VALUES (?, 1, 1, 1)
+  `),
+
+  updateStreak: db.prepare(`
+    UPDATE mission_streaks
+    SET current_streak = ?,
+        longest_streak = CASE WHEN longest_streak < ? THEN ? ELSE longest_streak END,
+        last_completion_date = CURRENT_DATE,
+        total_completed_days = total_completed_days + 1,
+        updated_at = CURRENT_TIMESTAMP
+    WHERE user_id = ?
+  `),
+
+  resetStreak: db.prepare(`
+    UPDATE mission_streaks
+    SET current_streak = 1,
+        last_completion_date = CURRENT_DATE,
+        updated_at = CURRENT_TIMESTAMP
+    WHERE user_id = ?
+  `),
+
+  getTopStreaks: db.prepare(`
+    SELECT ms.*, u.username, u.full_name
+    FROM mission_streaks ms
+    JOIN users u ON ms.user_id = u.id
+    ORDER BY ms.current_streak DESC, ms.total_completed_days DESC
+    LIMIT 100
   `)
 };
 
