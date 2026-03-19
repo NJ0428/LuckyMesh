@@ -1690,9 +1690,251 @@ export const missionQueries = {
   `)
 };
 
+// 채팅 메시지 테이블 생성
+const createChatMessagesTable = db.prepare(`
+  CREATE TABLE IF NOT EXISTS chat_messages (
+    id TEXT PRIMARY KEY,
+    room TEXT NOT NULL,
+    user_id INTEGER NOT NULL,
+    username TEXT NOT NULL,
+    message TEXT NOT NULL,
+    original_message TEXT,
+    language TEXT DEFAULT 'ko',
+    is_system_message BOOLEAN DEFAULT FALSE,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+  )
+`);
+
+// 채팅 반응 테이블 생성
+const createChatReactionsTable = db.prepare(`
+  CREATE TABLE IF NOT EXISTS chat_reactions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    message_id TEXT NOT NULL,
+    user_id INTEGER NOT NULL,
+    emoji TEXT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+    FOREIGN KEY (message_id) REFERENCES chat_messages (id) ON DELETE CASCADE,
+    UNIQUE(message_id, user_id, emoji)
+  )
+`);
+
+// 채팅 신고 테이블 생성
+const createChatReportsTable = db.prepare(`
+  CREATE TABLE IF NOT EXISTS chat_reports (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    reporter_id INTEGER NOT NULL,
+    reported_user_id INTEGER NOT NULL,
+    message_id TEXT NOT NULL,
+    reason TEXT NOT NULL,
+    status TEXT DEFAULT 'pending',
+    reviewed_by INTEGER,
+    reviewed_at DATETIME,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (reporter_id) REFERENCES users (id) ON DELETE CASCADE,
+    FOREIGN KEY (reported_user_id) REFERENCES users (id) ON DELETE CASCADE,
+    FOREIGN KEY (reviewed_by) REFERENCES users (id) ON DELETE SET NULL
+  )
+`);
+
+// 채팅 차단 테이블 생성
+const createChatBlockedTable = db.prepare(`
+  CREATE TABLE IF NOT EXISTS chat_blocked_users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    blocker_id INTEGER NOT NULL,
+    blocked_id INTEGER NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (blocker_id) REFERENCES users (id) ON DELETE CASCADE,
+    FOREIGN KEY (blocked_id) REFERENCES users (id) ON DELETE CASCADE,
+    UNIQUE(blocker_id, blocked_id),
+    CHECK (blocker_id != blocked_id)
+  )
+`);
+
+// 테이블 생성 실행
+createUserTable.run();
+createSessionTable.run();
+createGameHistoryTable.run();
+createRankingsTable.run();
+createRankingRewardsTable.run();
+createRewardDistributionsTable.run();
+createTournamentsTable.run();
+createTournamentParticipantsTable.run();
+createTournamentPrizesTable.run();
+createTournamentGameHistoryTable.run();
+createFriendsTable.run();
+createBlockedUsersTable.run();
+createUserOnlineStatusTable.run();
+createChipGiftsTable.run();
+createReferralsTable.run();
+createReferralCodesTable.run();
+createAchievementsTable.run();
+createUserAchievementsTable.run();
+createAchievementRewardsTable.run();
+createDailyMissionsTable.run();
+createUserDailyMissionsTable.run();
+createMissionStreaksTable.run();
+createChallengesTable.run();
+createUserChallengesTable.run();
+createChatMessagesTable.run();
+createChatReactionsTable.run();
+createChatReportsTable.run();
+createChatBlockedTable.run();
+
+// 채팅 관련 쿼리들
+export const chatQueries = {
+  // 메시지 생성
+  createMessage: db.prepare(`
+    INSERT INTO chat_messages (id, room, user_id, username, message, original_message, language, is_system_message)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+  `),
+
+  // 방별 메시지 조회
+  findByRoom: db.prepare(`
+    SELECT cm.*, u.avatar
+    FROM chat_messages cm
+    LEFT JOIN users u ON cm.user_id = u.id
+    WHERE cm.room = ?
+    ORDER BY cm.created_at DESC
+    LIMIT ?
+  `),
+
+  // 최근 메시지 조회
+  findRecent: db.prepare(`
+    SELECT cm.*, u.avatar
+    FROM chat_messages cm
+    LEFT JOIN users u ON cm.user_id = u.id
+    WHERE cm.room = ? AND cm.created_at > datetime('now', '-' || ? || ' seconds')
+    ORDER BY cm.created_at DESC
+  `),
+
+  // 메시지 ID로 조회
+  findById: db.prepare(`
+    SELECT * FROM chat_messages WHERE id = ?
+  `),
+
+  // 사용자별 메시지 조회
+  findByUserId: db.prepare(`
+    SELECT * FROM chat_messages
+    WHERE user_id = ?
+    ORDER BY created_at DESC
+    LIMIT ?
+  `),
+
+  // 오래된 메시지 삭제 (7일 이상)
+  deleteOldMessages: db.prepare(`
+    DELETE FROM chat_messages WHERE created_at < datetime('now', '-7 days')
+  `),
+
+  // 반응 추가
+  addReaction: db.prepare(`
+    INSERT INTO chat_reactions (message_id, user_id, emoji)
+    VALUES (?, ?, ?)
+  `),
+
+  // 반응 제거
+  removeReaction: db.prepare(`
+    DELETE FROM chat_reactions WHERE message_id = ? AND user_id = ? AND emoji = ?
+  `),
+
+  // 메시지별 반응 조회
+  findReactionsByMessage: db.prepare(`
+    SELECT cr.*, u.username
+    FROM chat_reactions cr
+    JOIN users u ON cr.user_id = u.id
+    WHERE cr.message_id = ?
+  `),
+
+  // 사용자의 반응 조회
+  findUserReactions: db.prepare(`
+    SELECT cr.*, cm.message
+    FROM chat_reactions cr
+    JOIN chat_messages cm ON cr.message_id = cm.id
+    WHERE cr.user_id = ?
+    ORDER BY cr.created_at DESC
+  `),
+
+  // 신고 생성
+  createReport: db.prepare(`
+    INSERT INTO chat_reports (reporter_id, reported_user_id, message_id, reason)
+    VALUES (?, ?, ?, ?)
+  `),
+
+  // 신고 목록 조회
+  findReports: db.prepare(`
+    SELECT
+      cr.*,
+      reporter.username as reporter_name,
+      reported.username as reported_name,
+      cm.message as reported_message
+    FROM chat_reports cr
+    JOIN users reporter ON cr.reporter_id = reporter.id
+    JOIN users reported ON cr.reported_user_id = reported.id
+    JOIN chat_messages cm ON cr.message_id = cm.id
+    WHERE cr.status = ?
+    ORDER BY cr.created_at DESC
+    LIMIT ?
+  `),
+
+  // 사용자별 신고 조회
+  findReportsByUser: db.prepare(`
+    SELECT * FROM chat_reports
+    WHERE reporter_id = ? OR reported_user_id = ?
+    ORDER BY created_at DESC
+  `),
+
+  // 신고 업데이트 (상태 변경)
+  updateReportStatus: db.prepare(`
+    UPDATE chat_reports
+    SET status = ?, reviewed_by = ?, reviewed_at = CURRENT_TIMESTAMP
+    WHERE id = ?
+  `),
+
+  // 채팅 차단 추가
+  blockUser: db.prepare(`
+    INSERT INTO chat_blocked_users (blocker_id, blocked_id)
+    VALUES (?, ?)
+  `),
+
+  // 채팅 차단 해제
+  unblockUser: db.prepare(`
+    DELETE FROM chat_blocked_users WHERE blocker_id = ? AND blocked_id = ?
+  `),
+
+  // 차단 목록 조회
+  findBlocked: db.prepare(`
+    SELECT
+      cbu.*,
+      u.username as blocked_name,
+      u.full_name as blocked_full_name
+    FROM chat_blocked_users cbu
+    JOIN users u ON cbu.blocked_id = u.id
+    WHERE cbu.blocker_id = ?
+    ORDER BY cbu.created_at DESC
+  `),
+
+  // 차단 여부 확인
+  checkBlocked: db.prepare(`
+    SELECT * FROM chat_blocked_users
+    WHERE blocker_id = ? AND blocked_id = ?
+  `),
+
+  // 방별 메시지 수 카운트
+  countMessagesInRoom: db.prepare(`
+    SELECT COUNT(*) as count FROM chat_messages WHERE room = ?
+  `),
+
+  // 사용자별 메시지 수 카운트
+  countMessagesByUser: db.prepare(`
+    SELECT COUNT(*) as count FROM chat_messages WHERE user_id = ?
+  `)
+};
+
 // 데이터베이스 정리 함수 (만료된 세션 삭제)
 export function cleanup() {
   sessionQueries.cleanExpired.run();
+  chatQueries.deleteOldMessages.run();
 }
 
 // 앱 시작 시 정리 실행
