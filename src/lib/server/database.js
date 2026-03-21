@@ -73,7 +73,8 @@ const createRankingsTable = db.prepare(`
     win_rate REAL DEFAULT 0,
     rank INTEGER NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+    UNIQUE(user_id, ranking_type, game_type, period_start, period_end)
   )
 `);
 
