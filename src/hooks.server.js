@@ -3,8 +3,8 @@ import { validateSession } from '$lib/server/auth.js';
 
 let io;
 
-export function handle({ request }) {
-	return request;
+export async function handle({ event, resolve }) {
+	return await resolve(event);
 }
 
 export function websocket(server) {

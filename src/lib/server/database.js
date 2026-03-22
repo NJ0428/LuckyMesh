@@ -1793,7 +1793,7 @@ export const chatQueries = {
 
   // 방별 메시지 조회
   findByRoom: db.prepare(`
-    SELECT cm.*, u.avatar
+    SELECT cm.*
     FROM chat_messages cm
     LEFT JOIN users u ON cm.user_id = u.id
     WHERE cm.room = ?
@@ -1803,7 +1803,7 @@ export const chatQueries = {
 
   // 최근 메시지 조회
   findRecent: db.prepare(`
-    SELECT cm.*, u.avatar
+    SELECT cm.*
     FROM chat_messages cm
     LEFT JOIN users u ON cm.user_id = u.id
     WHERE cm.room = ? AND cm.created_at > datetime('now', '-' || ? || ' seconds')
