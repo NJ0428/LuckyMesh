@@ -37,6 +37,8 @@ coverage/
 *.swp
 *.swo
 *~
+.*
+
 
 # OS generated files
 .DS_Store

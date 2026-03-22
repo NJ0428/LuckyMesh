@@ -1003,7 +1003,7 @@ export const tournamentQueries = {
   `),
 
   findUndistributedPrizes: db.prepare(`
-    SELECT tp.*, tp.current_rank
+    SELECT tp.*
     FROM tournament_prizes tp
     JOIN tournament_participants tp2 ON tp2.current_rank >= tp.rank_from AND tp2.current_rank <= tp.rank_to AND tp2.tournament_id = tp.tournament_id
     WHERE tp.tournament_id = ? AND tp.is_distributed = FALSE
@@ -1052,8 +1052,8 @@ export const friendQueries = {
       u_receiver.username as friend_name,
       u_receiver.full_name as friend_full_name,
       u_receiver.vip_tier as friend_vip_tier,
-      u_receiver.is_online as friend_is_online,
-      u_receiver.last_seen as friend_last_seen
+      uos.is_online as friend_is_online,
+      uos.last_seen as friend_last_seen
     FROM friends f
     JOIN users u_sender ON f.user_id = u_sender.id
     JOIN users u_receiver ON f.friend_id = u_receiver.id
