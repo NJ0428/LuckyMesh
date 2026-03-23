@@ -226,6 +226,29 @@
             </div>
 
             <div class="space-y-1 mx-3">
+              <!-- 게임 섹션 -->
+              <div class="px-3 py-2 text-xs font-semibold text-casino-gold/70 uppercase tracking-wider mt-2">게임</div>
+              <a href="/poker" class="block px-3 py-2 rounded-md text-white hover:bg-casino-gold/20 hover:text-casino-gold transition-colors duration-200">
+                ♥️ 포커
+              </a>
+              <a href="/sicbo" class="block px-3 py-2 rounded-md text-white hover:bg-casino-gold/20 hover:text-casino-gold transition-colors duration-200">
+                🎲 다이사이
+              </a>
+
+              <!-- 커뮤니티 섹션 -->
+              <div class="px-3 py-2 text-xs font-semibold text-casino-gold/70 uppercase tracking-wider mt-2">커뮤니티</div>
+              <a href="/chat" class="block px-3 py-2 rounded-md text-white hover:bg-casino-gold/20 hover:text-casino-gold transition-colors duration-200">
+                💬 채팅
+              </a>
+              <a href="/friends" class="block px-3 py-2 rounded-md text-white hover:bg-casino-gold/20 hover:text-casino-gold transition-colors duration-200">
+                👥 친구 관리
+              </a>
+              <a href="/tournaments" class="block px-3 py-2 rounded-md text-white hover:bg-casino-gold/20 hover:text-casino-gold transition-colors duration-200">
+                🏆 토너먼트
+              </a>
+
+              <!-- 내 정보 섹션 -->
+              <div class="px-3 py-2 text-xs font-semibold text-casino-gold/70 uppercase tracking-wider mt-2">내 정보</div>
               <a href="/profile" class="block px-3 py-2 rounded-md text-white hover:bg-casino-gold/20 hover:text-casino-gold transition-colors duration-200">
                 👤 내 프로필
               </a>
@@ -237,15 +260,6 @@
               </a>
               <a href="/history" class="block px-3 py-2 rounded-md text-white hover:bg-casino-gold/20 hover:text-casino-gold transition-colors duration-200">
                 📊 게임 기록
-              </a>
-              <a href="/tournaments" class="block px-3 py-2 rounded-md text-white hover:bg-casino-gold/20 hover:text-casino-gold transition-colors duration-200">
-                🏆 토너먼트
-              </a>
-              <a href="/chat" class="block px-3 py-2 rounded-md text-white hover:bg-casino-gold/20 hover:text-casino-gold transition-colors duration-200">
-                💬 채팅
-              </a>
-              <a href="/friends" class="block px-3 py-2 rounded-md text-white hover:bg-casino-gold/20 hover:text-casino-gold transition-colors duration-200">
-                👥 친구 관리
               </a>
               <a href="/referrals" class="block px-3 py-2 rounded-md text-white hover:bg-casino-gold/20 hover:text-casino-gold transition-colors duration-200">
                 🎁 친구 초대
