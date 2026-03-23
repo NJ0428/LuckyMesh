@@ -5,19 +5,13 @@
   let mobileMenuOpen = false;
   let userMenuOpen = false;
 
+  // 메인 네비게이션: 홈 + 인기 게임
   const navItems = [
     { href: '/', label: '홈', icon: '🏠' },
     { href: '/blackjack', label: '블랙잭', icon: '🃏' },
     { href: '/baccarat', label: '바카라', icon: '♠️' },
     { href: '/roulette', label: '룰렛', icon: '🎰' },
-    { href: '/poker', label: '포커', icon: '♥️' },
-    { href: '/sicbo', label: '다이사이', icon: '🎲' },
-    { href: '/slots', label: '슬롯', icon: '🍒' },
-    { href: '/tournaments', label: '토너먼트', icon: '🏆' },
-    { href: '/chat', label: '채팅', icon: '💬' },
-    { href: '/friends', label: '친구', icon: '👥' },
-    { href: '/referrals', label: '초대', icon: '🎁' },
-    { href: '/vip', label: 'VIP', icon: '👑' }
+    { href: '/slots', label: '슬롯', icon: '🍒' }
   ];
 
   function toggleMobileMenu() {
@@ -114,6 +108,29 @@
                 </div>
 
                 <div class="py-2">
+                  <!-- 게임 섹션 -->
+                  <div class="px-4 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">게임</div>
+                  <a href="/poker" class="block px-4 py-2 text-sm text-gray-600 hover:bg-white/20 hover:text-primary-soft-purple transition-colors duration-200 font-poppins">
+                    ♥️ 포커
+                  </a>
+                  <a href="/sicbo" class="block px-4 py-2 text-sm text-gray-600 hover:bg-white/20 hover:text-primary-soft-purple transition-colors duration-200 font-poppins">
+                    🎲 다이사이
+                  </a>
+
+                  <!-- 커뮤니티 섹션 -->
+                  <div class="px-4 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider mt-2">커뮤니티</div>
+                  <a href="/chat" class="block px-4 py-2 text-sm text-gray-600 hover:bg-white/20 hover:text-primary-soft-purple transition-colors duration-200 font-poppins">
+                    💬 채팅
+                  </a>
+                  <a href="/friends" class="block px-4 py-2 text-sm text-gray-600 hover:bg-white/20 hover:text-primary-soft-purple transition-colors duration-200 font-poppins">
+                    👥 친구 관리
+                  </a>
+                  <a href="/tournaments" class="block px-4 py-2 text-sm text-gray-600 hover:bg-white/20 hover:text-primary-soft-purple transition-colors duration-200 font-poppins">
+                    🏆 토너먼트
+                  </a>
+
+                  <!-- 내 정보 섹션 -->
+                  <div class="px-4 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider mt-2">내 정보</div>
                   <a href="/profile" class="block px-4 py-2 text-sm text-gray-600 hover:bg-white/20 hover:text-primary-soft-purple transition-colors duration-200 font-poppins">
                     👤 내 프로필
                   </a>
@@ -125,15 +142,6 @@
                   </a>
                   <a href="/history" class="block px-4 py-2 text-sm text-gray-600 hover:bg-white/20 hover:text-primary-soft-purple transition-colors duration-200 font-poppins">
                     📊 게임 기록
-                  </a>
-                  <a href="/tournaments" class="block px-4 py-2 text-sm text-gray-600 hover:bg-white/20 hover:text-primary-soft-purple transition-colors duration-200 font-poppins">
-                    🏆 토너먼트
-                  </a>
-                  <a href="/chat" class="block px-4 py-2 text-sm text-gray-600 hover:bg-white/20 hover:text-primary-soft-purple transition-colors duration-200 font-poppins">
-                    💬 채팅
-                  </a>
-                  <a href="/friends" class="block px-4 py-2 text-sm text-gray-600 hover:bg-white/20 hover:text-primary-soft-purple transition-colors duration-200 font-poppins">
-                    👥 친구 관리
                   </a>
                   <a href="/referrals" class="block px-4 py-2 text-sm text-gray-600 hover:bg-white/20 hover:text-primary-soft-purple transition-colors duration-200 font-poppins">
                     🎁 친구 초대
