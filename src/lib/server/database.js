@@ -590,6 +590,21 @@ try {
   console.error('Index creation error:', e);
 }
 
+// 인덱스 생성 (예적금 시스템)
+try {
+  db.exec(`
+    CREATE INDEX IF NOT EXISTS idx_chip_deposits_user ON chip_deposits(user_id);
+    CREATE INDEX IF NOT EXISTS idx_chip_deposits_status ON chip_deposits(status);
+    CREATE INDEX IF NOT EXISTS idx_chip_deposits_activity ON chip_deposits(last_activity);
+    CREATE INDEX IF NOT EXISTS idx_deposit_interest_history_user ON deposit_interest_history(user_id, paid_at);
+    CREATE INDEX IF NOT EXISTS idx_deposit_interest_history_deposit ON deposit_interest_history(deposit_id);
+    CREATE INDEX IF NOT EXISTS idx_deposit_transactions_user ON deposit_transactions(user_id, created_at);
+    CREATE INDEX IF NOT EXISTS idx_deposit_transactions_deposit ON deposit_transactions(deposit_id);
+  `);
+} catch (e) {
+  console.error('Index creation error:', e);
+}
+
 // 사용자 관련 쿼리들
 export const userQueries = {
   // 사용자 생성
@@ -1753,6 +1768,57 @@ const createChatBlockedTable = db.prepare(`
   )
 `);
 
+// 예치금 계좌 테이블 생성
+const createChipDepositsTable = db.prepare(`
+  CREATE TABLE IF NOT EXISTS chip_deposits (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL UNIQUE,
+    amount INTEGER DEFAULT 0,
+    interest_rate REAL DEFAULT 0.01,
+    interest_type TEXT DEFAULT 'daily',
+    status TEXT DEFAULT 'active',
+    last_interest_paid DATETIME,
+    last_activity DATETIME DEFAULT CURRENT_TIMESTAMP,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+    CHECK (amount >= 0)
+  )
+`);
+
+// 예치금 이자 지급 내역 테이블 생성
+const createDepositInterestHistoryTable = db.prepare(`
+  CREATE TABLE IF NOT EXISTS deposit_interest_history (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    deposit_id INTEGER NOT NULL,
+    user_id INTEGER NOT NULL,
+    interest_amount INTEGER NOT NULL,
+    interest_rate REAL NOT NULL,
+    balance_before INTEGER NOT NULL,
+    balance_after INTEGER NOT NULL,
+    paid_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (deposit_id) REFERENCES chip_deposits (id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+  )
+`);
+
+// 예치금 입출금 내역 테이블 생성
+const createDepositTransactionsTable = db.prepare(`
+  CREATE TABLE IF NOT EXISTS deposit_transactions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    deposit_id INTEGER NOT NULL,
+    user_id INTEGER NOT NULL,
+    transaction_type TEXT NOT NULL,
+    amount INTEGER NOT NULL,
+    balance_before INTEGER NOT NULL,
+    balance_after INTEGER NOT NULL,
+    reason TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (deposit_id) REFERENCES chip_deposits (id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+  )
+`);
+
 // 테이블 생성 실행
 createUserTable.run();
 createSessionTable.run();
@@ -1782,6 +1848,9 @@ createChatMessagesTable.run();
 createChatReactionsTable.run();
 createChatReportsTable.run();
 createChatBlockedTable.run();
+createChipDepositsTable.run();
+createDepositInterestHistoryTable.run();
+createDepositTransactionsTable.run();
 
 // 채팅 관련 쿼리들
 export const chatQueries = {
@@ -1932,6 +2001,140 @@ export const chatQueries = {
   `)
 };
 
+// 예적금 관련 쿼리들
+export const depositQueries = {
+  // 예치금 계좌 생성
+  create: db.prepare(`
+    INSERT INTO chip_deposits (user_id, amount, interest_rate, interest_type)
+    VALUES (?, ?, ?, ?)
+  `),
+
+  // 사용자 예치금 계좌 조회
+  findByUserId: db.prepare(`
+    SELECT cd.*, u.vip_tier
+    FROM chip_deposits cd
+    JOIN users u ON cd.user_id = u.id
+    WHERE cd.user_id = ?
+  `),
+
+  // ID로 예치금 계좌 조회
+  findById: db.prepare(`
+    SELECT * FROM chip_deposits WHERE id = ?
+  `),
+
+  // 활성 예치금 계좌 모두 조회
+  findActive: db.prepare(`
+    SELECT cd.*, u.vip_tier
+    FROM chip_deposits cd
+    JOIN users u ON cd.user_id = u.id
+    WHERE cd.status = 'active'
+  `),
+
+  // 오래된 활동 계좌 조회 (마지막 활동으로부터 N일 이상)
+  findInactive: db.prepare(`
+    SELECT cd.*, u.vip_tier
+    FROM chip_deposits cd
+    JOIN users u ON cd.user_id = u.id
+    WHERE cd.status = 'active' AND cd.last_activity < datetime('now', '-' || ? || ' days')
+  `),
+
+  // 예치금 입금
+  deposit: db.prepare(`
+    UPDATE chip_deposits
+    SET amount = amount + ?,
+        last_activity = CURRENT_TIMESTAMP,
+        updated_at = CURRENT_TIMESTAMP
+    WHERE id = ? AND user_id = ?
+  `),
+
+  // 예치금 출금
+  withdraw: db.prepare(`
+    UPDATE chip_deposits
+    SET amount = amount - ?,
+        last_activity = CURRENT_TIMESTAMP,
+        updated_at = CURRENT_TIMESTAMP
+    WHERE id = ? AND user_id = ? AND amount >= ?
+  `),
+
+  // 이자율 업데이트
+  updateInterestRate: db.prepare(`
+    UPDATE chip_deposits
+    SET interest_rate = ?, updated_at = CURRENT_TIMESTAMP
+    WHERE id = ?
+  `),
+
+  // 이자 지금 시간 업데이트
+  updateInterestPaid: db.prepare(`
+    UPDATE chip_deposits
+    SET last_interest_paid = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
+    WHERE id = ?
+  `),
+
+  // 계좌 상태 변경
+  updateStatus: db.prepare(`
+    UPDATE chip_deposits
+    SET status = ?, updated_at = CURRENT_TIMESTAMP
+    WHERE id = ?
+  `),
+
+  // 활동 시간 업데이트
+  updateActivity: db.prepare(`
+    UPDATE chip_deposits
+    SET last_activity = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
+    WHERE user_id = ?
+  `),
+
+  // 이자 지급 내역 생성
+  createInterestHistory: db.prepare(`
+    INSERT INTO deposit_interest_history (deposit_id, user_id, interest_amount, interest_rate, balance_before, balance_after)
+    VALUES (?, ?, ?, ?, ?, ?)
+  `),
+
+  // 이자 지급 내역 조회
+  findInterestHistory: db.prepare(`
+    SELECT dih.* FROM deposit_interest_history dih
+    WHERE dih.user_id = ?
+    ORDER BY dih.paid_at DESC
+    LIMIT ?
+  `),
+
+  // 입출금 내역 생성
+  createTransaction: db.prepare(`
+    INSERT INTO deposit_transactions (deposit_id, user_id, transaction_type, amount, balance_before, balance_after, reason)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
+  `),
+
+  // 입출금 내역 조회
+  findTransactions: db.prepare(`
+    SELECT dt.* FROM deposit_transactions dt
+    WHERE dt.user_id = ?
+    ORDER BY dt.created_at DESC
+    LIMIT ?
+  `),
+
+  // 총 예치금 통계
+  getTotalStats: db.prepare(`
+    SELECT
+      COUNT(*) as total_accounts,
+      SUM(amount) as total_deposited,
+      AVG(amount) as avg_deposit,
+      AVG(interest_rate) as avg_interest_rate
+    FROM chip_deposits
+    WHERE status = 'active'
+  `),
+
+  // VIP 등급별 이자율 설정 조회
+  getVipInterestRates: db.prepare(`
+    SELECT
+      vip_tier,
+      AVG(interest_rate) as avg_rate
+    FROM chip_deposits cd
+    JOIN users u ON cd.user_id = u.id
+    WHERE cd.status = 'active'
+    GROUP BY vip_tier
+  `)
+};
+
 // 데이터베이스 정리 함수 (만료된 세션 삭제)
 export function cleanup() {
   sessionQueries.cleanExpired.run();
@@ -1943,5 +2146,9 @@ cleanup();
 
 // 주기적으로 정리 (1시간마다)
 setInterval(cleanup, 60 * 60 * 1000);
+
+// 예적금 이자 지급 스케줄러 시작 (서버 시작 시)
+import { startAllSchedulers } from './depositScheduler.js';
+startAllSchedulers();
 
 export default db;
