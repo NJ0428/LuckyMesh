@@ -146,6 +146,9 @@
                   <a href="/history" class="block px-4 py-2 text-sm text-gray-600 hover:bg-white/20 hover:text-primary-soft-purple transition-colors duration-200 font-poppins">
                     📊 게임 기록
                   </a>
+                  <a href="/statistics" class="block px-4 py-2 text-sm text-gray-600 hover:bg-white/20 hover:text-primary-soft-purple transition-colors duration-200 font-poppins">
+                    📈 통계 & 분석
+                  </a>
                   <a href="/referrals" class="block px-4 py-2 text-sm text-gray-600 hover:bg-white/20 hover:text-primary-soft-purple transition-colors duration-200 font-poppins">
                     🎁 친구 초대
                   </a>
@@ -266,6 +269,9 @@
               </a>
               <a href="/history" class="block px-3 py-2 rounded-md text-white hover:bg-casino-gold/20 hover:text-casino-gold transition-colors duration-200">
                 📊 게임 기록
+              </a>
+              <a href="/statistics" class="block px-3 py-2 rounded-md text-white hover:bg-casino-gold/20 hover:text-casino-gold transition-colors duration-200">
+                📈 통계 & 분석
               </a>
               <a href="/referrals" class="block px-3 py-2 rounded-md text-white hover:bg-casino-gold/20 hover:text-casino-gold transition-colors duration-200">
                 🎁 친구 초대
