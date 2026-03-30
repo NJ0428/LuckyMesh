@@ -14,6 +14,12 @@
     { href: '/slots', label: '슬롯', icon: '🍒' }
   ];
 
+  // 보상 메뉴
+  const rewardItems = [
+    { href: '/daily-reward', label: '일일 보상', icon: '🎁' },
+    { href: '/gacha', label: '룰렛 뽑기', icon: '🎰' }
+  ];
+
   function toggleMobileMenu() {
     mobileMenuOpen = !mobileMenuOpen;
     userMenuOpen = false;
@@ -152,6 +158,16 @@
                   <a href="/referrals" class="block px-4 py-2 text-sm text-gray-600 hover:bg-white/20 hover:text-primary-soft-purple transition-colors duration-200 font-poppins">
                     🎁 친구 초대
                   </a>
+
+                  <!-- 보상 섹션 -->
+                  <div class="px-4 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider mt-2">보상</div>
+                  <a href="/daily-reward" class="block px-4 py-2 text-sm text-gray-600 hover:bg-white/20 hover:text-primary-soft-purple transition-colors duration-200 font-poppins">
+                    🎁 일일 보상
+                  </a>
+                  <a href="/gacha" class="block px-4 py-2 text-sm text-gray-600 hover:bg-white/20 hover:text-primary-soft-purple transition-colors duration-200 font-poppins">
+                    🎰 룰렛 뽑기
+                  </a>
+
                   <a href="/vip" class="block px-4 py-2 text-sm text-gray-600 hover:bg-white/20 hover:text-primary-soft-purple transition-colors duration-200 font-poppins">
                     👑 VIP 라운지
                   </a>
@@ -276,6 +292,16 @@
               <a href="/referrals" class="block px-3 py-2 rounded-md text-white hover:bg-casino-gold/20 hover:text-casino-gold transition-colors duration-200">
                 🎁 친구 초대
               </a>
+
+              <!-- 보상 섹션 -->
+              <div class="px-3 py-2 text-xs font-semibold text-casino-gold/70 uppercase tracking-wider mt-2">보상</div>
+              <a href="/daily-reward" class="block px-3 py-2 rounded-md text-white hover:bg-casino-gold/20 hover:text-casino-gold transition-colors duration-200">
+                🎁 일일 보상
+              </a>
+              <a href="/gacha" class="block px-3 py-2 rounded-md text-white hover:bg-casino-gold/20 hover:text-casino-gold transition-colors duration-200">
+                🎰 룰렛 뽑기
+              </a>
+
               <a href="/vip" class="block px-3 py-2 rounded-md text-white hover:bg-casino-gold/20 hover:text-casino-gold transition-colors duration-200">
                 👑 VIP 라운지
               </a>

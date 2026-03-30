@@ -448,6 +448,90 @@ const createMissionStreaksTable = db.prepare(`
   )
 `);
 
+// 일일 보상 테이블 생성
+const createDailyRewardsTable = db.prepare(`
+  CREATE TABLE IF NOT EXISTS daily_rewards (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    reward_date DATE NOT NULL,
+    vip_tier_at_claim TEXT NOT NULL,
+    reward_amount INTEGER NOT NULL,
+    is_claimed BOOLEAN DEFAULT FALSE,
+    claimed_at DATETIME,
+    expires_at DATETIME DEFAULT (datetime('now', '+24 hours')),
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+    UNIQUE(user_id, reward_date)
+  )
+`);
+
+// 룰렛 뽑기 테이블 생성
+const createGachaSpinsTable = db.prepare(`
+  CREATE TABLE IF NOT EXISTS gacha_spins (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    spin_date DATE NOT NULL,
+    vip_tier_at_spin TEXT NOT NULL,
+    spin_count INTEGER DEFAULT 0,
+    free_spins_used INTEGER DEFAULT 0,
+    paid_spins_used INTEGER DEFAULT 0,
+    total_spins INTEGER DEFAULT 0,
+    last_spin_at DATETIME,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+    UNIQUE(user_id, spin_date)
+  )
+`);
+
+// 뽑기 결과 내역 테이블 생성
+const createGachaResultsTable = db.prepare(`
+  CREATE TABLE IF NOT EXISTS gacha_results (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    gacha_spin_id INTEGER NOT NULL,
+    rarity TEXT NOT NULL,
+    reward_amount INTEGER NOT NULL,
+    is_free_spin BOOLEAN DEFAULT TRUE,
+    vip_bonus_applied BOOLEAN DEFAULT FALSE,
+    vip_bonus_multiplier REAL DEFAULT 1.0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+    FOREIGN KEY (gacha_spin_id) REFERENCES gacha_spins (id) ON DELETE CASCADE
+  )
+`);
+
+// 룰렛 보상 설정 테이블 생성
+const createGachaRewardConfigsTable = db.prepare(`
+  CREATE TABLE IF NOT EXISTS gacha_reward_configs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    rarity TEXT NOT NULL UNIQUE,
+    base_reward_amount INTEGER NOT NULL,
+    base_probability REAL NOT NULL,
+    icon TEXT NOT NULL,
+    color TEXT NOT NULL,
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  )
+`);
+
+// VIP 보너스 설정 테이블 생성
+const createGachaVipBonusesTable = db.prepare(`
+  CREATE TABLE IF NOT EXISTS gacha_vip_bonuses (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    vip_tier TEXT NOT NULL UNIQUE,
+    daily_reward_amount INTEGER NOT NULL,
+    free_spins_per_day INTEGER NOT NULL,
+    rarity_bonus_rare REAL DEFAULT 0.0,
+    rarity_bonus_legendary REAL DEFAULT 0.0,
+    probability_multiplier REAL DEFAULT 1.0,
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  )
+`);
+
 // 테이블 생성 실행
 createUserTable.run();
 createSessionTable.run();
@@ -473,6 +557,33 @@ createUserDailyMissionsTable.run();
 createChallengesTable.run();
 createUserChallengesTable.run();
 createMissionStreaksTable.run();
+createDailyRewardsTable.run();
+createGachaSpinsTable.run();
+createGachaResultsTable.run();
+createGachaRewardConfigsTable.run();
+createGachaVipBonusesTable.run();
+
+// 초기 데이터 삽입: 룰렛 보상 설정
+const insertGachaRewardConfigs = db.prepare(`
+  INSERT OR IGNORE INTO gacha_reward_configs (rarity, base_reward_amount, base_probability, icon, color)
+  VALUES
+    ('common', 10000, 60.0, '⚪', 'from-gray-400 to-gray-600'),
+    ('rare', 50000, 30.0, '🔵', 'from-blue-400 to-blue-600'),
+    ('legendary', 200000, 10.0, '🟡', 'from-yellow-400 to-yellow-600')
+`);
+insertGachaRewardConfigs.run();
+
+// 초기 데이터 삽입: VIP 보너스 설정
+const insertGachaVipBonuses = db.prepare(`
+  INSERT OR IGNORE INTO gacha_vip_bonuses (vip_tier, daily_reward_amount, free_spins_per_day, rarity_bonus_rare, rarity_bonus_legendary, probability_multiplier)
+  VALUES
+    ('bronze', 5000, 1, 0.0, 0.0, 1.0),
+    ('silver', 10000, 2, 0.05, 0.02, 1.0),
+    ('gold', 20000, 3, 0.10, 0.05, 1.0),
+    ('platinum', 50000, 4, 0.15, 0.08, 1.0),
+    ('diamond', 100000, 5, 0.20, 0.12, 1.0)
+`);
+insertGachaVipBonuses.run();
 
 // 기존 사용자들의 잔액이 0인 경우 10000으로 업데이트
 const updateZeroBalances = db.prepare(`
@@ -600,6 +711,21 @@ try {
     CREATE INDEX IF NOT EXISTS idx_deposit_interest_history_deposit ON deposit_interest_history(deposit_id);
     CREATE INDEX IF NOT EXISTS idx_deposit_transactions_user ON deposit_transactions(user_id, created_at);
     CREATE INDEX IF NOT EXISTS idx_deposit_transactions_deposit ON deposit_transactions(deposit_id);
+  `);
+} catch (e) {
+  console.error('Index creation error:', e);
+}
+
+// 인덱스 생성 (일일 보상 및 룰렛 시스템)
+try {
+  db.exec(`
+    CREATE INDEX IF NOT EXISTS idx_daily_rewards_user_date ON daily_rewards(user_id, reward_date);
+    CREATE INDEX IF NOT EXISTS idx_daily_rewards_claimed ON daily_rewards(is_claimed, expires_at);
+    CREATE INDEX IF NOT EXISTS idx_gacha_spins_user_date ON gacha_spins(user_id, spin_date);
+    CREATE INDEX IF NOT EXISTS idx_gacha_results_user_created ON gacha_results(user_id, created_at DESC);
+    CREATE INDEX IF NOT EXISTS idx_gacha_results_rarity ON gacha_results(rarity);
+    CREATE INDEX IF NOT EXISTS idx_gacha_vip_bonuses_tier ON gacha_vip_bonuses(vip_tier);
+    CREATE INDEX IF NOT EXISTS idx_gacha_reward_configs_rarity ON gacha_reward_configs(rarity);
   `);
 } catch (e) {
   console.error('Index creation error:', e);
@@ -2132,6 +2258,144 @@ export const depositQueries = {
     JOIN users u ON cd.user_id = u.id
     WHERE cd.status = 'active'
     GROUP BY vip_tier
+  `)
+};
+
+// 일일 보상 관련 쿼리들
+export const dailyRewardQueries = {
+  // 오늘의 보상 생성/조회
+  getOrCreateDaily: db.prepare(`
+    INSERT INTO daily_rewards (user_id, reward_date, vip_tier_at_claim, reward_amount, expires_at)
+    VALUES (?, DATE(CURRENT_TIMESTAMP), ?, ?, datetime('now', '+24 hours'))
+    ON CONFLICT(user_id, reward_date) DO UPDATE SET updated_at = CURRENT_TIMESTAMP
+    RETURNING *
+  `),
+
+  // 사용자의 오늘 보상 조회
+  getTodayReward: db.prepare(`
+    SELECT * FROM daily_rewards
+    WHERE user_id = ? AND reward_date = DATE(CURRENT_TIMESTAMP)
+  `),
+
+  // 보상 수령 처리
+  claimReward: db.prepare(`
+    UPDATE daily_rewards
+    SET is_claimed = TRUE, claimed_at = CURRENT_TIMESTAMP
+    WHERE id = ? AND user_id = ? AND is_claimed = FALSE
+  `),
+
+  // 미수령 보상 조회
+  getUnclaimed: db.prepare(`
+    SELECT * FROM daily_rewards
+    WHERE user_id = ? AND is_claimed = FALSE AND expires_at > CURRENT_TIMESTAMP
+  `),
+
+  // 보상 내역 조회
+  getHistory: db.prepare(`
+    SELECT * FROM daily_rewards
+    WHERE user_id = ?
+    ORDER BY reward_date DESC
+    LIMIT ?
+  `)
+};
+
+// 룰렛 뽑기 관련 쿼리들
+export const gachaQueries = {
+  // 오늘의 뽑기 정보 생성/조회
+  getOrCreateTodaySpins: db.prepare(`
+    INSERT INTO gacha_spins (user_id, spin_date, vip_tier_at_spin, free_spins_used, paid_spins_used, total_spins)
+    VALUES (?, DATE(CURRENT_TIMESTAMP), ?, 0, 0, 0)
+    ON CONFLICT(user_id, spin_date) DO UPDATE SET updated_at = CURRENT_TIMESTAMP
+    RETURNING *
+  `),
+
+  // 뽑기 횟수 업데이트
+  updateSpinCount: db.prepare(`
+    UPDATE gacha_spins
+    SET spin_count = spin_count + 1,
+        free_spins_used = free_spins_used + ?,
+        paid_spins_used = paid_spins_used + ?,
+        total_spins = total_spins + 1,
+        last_spin_at = CURRENT_TIMESTAMP,
+        updated_at = CURRENT_TIMESTAMP
+    WHERE id = ? AND user_id = ?
+  `),
+
+  // 뽑기 결과 저장
+  createResult: db.prepare(`
+    INSERT INTO gacha_results (user_id, gacha_spin_id, rarity, reward_amount, is_free_spin, vip_bonus_applied, vip_bonus_multiplier)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
+  `),
+
+  // 뽑기 내역 조회
+  getUserResults: db.prepare(`
+    SELECT gr.*, gs.vip_tier_at_spin
+    FROM gacha_results gr
+    JOIN gacha_spins gs ON gr.gacha_spin_id = gs.id
+    WHERE gr.user_id = ?
+    ORDER BY gr.created_at DESC
+    LIMIT ?
+  `),
+
+  // 오늘의 뽑기 통계
+  getTodayStats: db.prepare(`
+    SELECT
+      free_spins_used,
+      paid_spins_used,
+      total_spins,
+      (SELECT COUNT(*) FROM gacha_results WHERE gacha_spin_id = gs.id) as result_count
+    FROM gacha_spins gs
+    WHERE gs.user_id = ? AND gs.spin_date = DATE(CURRENT_TIMESTAMP)
+  `),
+
+  // 레어도별 통계
+  getRarityStats: db.prepare(`
+    SELECT
+      rarity,
+      COUNT(*) as count,
+      SUM(reward_amount) as total_rewards
+    FROM gacha_results
+    WHERE user_id = ?
+    GROUP BY rarity
+  `)
+};
+
+// 룰렛 보상 설정 관련 쿼리들
+export const gachaConfigQueries = {
+  // 모든 활성화된 보상 설정 조회
+  getAllConfigs: db.prepare(`
+    SELECT * FROM gacha_reward_configs
+    WHERE is_active = TRUE
+    ORDER BY base_reward_amount ASC
+  `),
+
+  // 특정 레어도 설정 조회
+  getConfigByRarity: db.prepare(`
+    SELECT * FROM gacha_reward_configs
+    WHERE rarity = ? AND is_active = TRUE
+  `)
+};
+
+// VIP 보너스 설정 관련 쿼리들
+export const gachaVipBonusQueries = {
+  // 모든 VIP 보너스 설정 조회
+  getAllBonuses: db.prepare(`
+    SELECT * FROM gacha_vip_bonuses
+    WHERE is_active = TRUE
+    ORDER BY
+      CASE vip_tier
+        WHEN 'bronze' THEN 1
+        WHEN 'silver' THEN 2
+        WHEN 'gold' THEN 3
+        WHEN 'platinum' THEN 4
+        WHEN 'diamond' THEN 5
+      END
+  `),
+
+  // 특정 VIP 등급 보너스 조회
+  getBonusByTier: db.prepare(`
+    SELECT * FROM gacha_vip_bonuses
+    WHERE vip_tier = ? AND is_active = TRUE
   `)
 };
 
