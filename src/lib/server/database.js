@@ -2415,4 +2415,232 @@ setInterval(cleanup, 60 * 60 * 1000);
 import { startAllSchedulers } from './depositScheduler.js';
 startAllSchedulers();
 
+// ==================== 고객센터 테이블 생성 ====================
+
+// 지원 티켓 테이블 생성
+const createSupportTicketsTable = db.prepare(`
+  CREATE TABLE IF NOT EXISTS support_tickets (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    category TEXT NOT NULL,
+    subject TEXT NOT NULL,
+    message TEXT NOT NULL,
+    priority TEXT DEFAULT 'normal',
+    status TEXT DEFAULT 'open',
+    admin_response TEXT,
+    admin_id INTEGER,
+    responded_at DATETIME,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+    FOREIGN KEY (admin_id) REFERENCES users (id) ON DELETE SET NULL
+  )
+`);
+createSupportTicketsTable.run();
+
+// FAQ 테이블 생성
+const createFaqTable = db.prepare(`
+  CREATE TABLE IF NOT EXISTS faqs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    category TEXT NOT NULL,
+    question TEXT NOT NULL,
+    answer TEXT NOT NULL,
+    order_index INTEGER DEFAULT 0,
+    is_active BOOLEAN DEFAULT TRUE,
+    view_count INTEGER DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  )
+`);
+createFaqTable.run();
+
+// 버그 리포트 테이블 생성
+const createBugReportsTable = db.prepare(`
+  CREATE TABLE IF NOT EXISTS bug_reports (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER,
+    title TEXT NOT NULL,
+    description TEXT NOT NULL,
+    reproduction_steps TEXT,
+    severity TEXT DEFAULT 'medium',
+    status TEXT DEFAULT 'reported',
+    device_info TEXT,
+    browser_info TEXT,
+    screenshots TEXT,
+    admin_notes TEXT,
+    admin_id INTEGER,
+    resolved_at DATETIME,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE SET NULL,
+    FOREIGN KEY (admin_id) REFERENCES users (id) ON DELETE SET NULL
+  )
+`);
+createBugReportsTable.run();
+
+// 챗봇 대화 기록 테이블 생성
+const createChatbotLogsTable = db.prepare(`
+  CREATE TABLE IF NOT EXISTS chatbot_logs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER,
+    session_id TEXT NOT NULL,
+    user_message TEXT NOT NULL,
+    bot_response TEXT NOT NULL,
+    intent TEXT,
+    confidence REAL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE SET NULL
+  )
+`);
+createChatbotLogsTable.run();
+
+// 고객센터 쿼리
+export const supportQueries = {
+  // 티켓 관련
+  createTicket: db.prepare(`
+    INSERT INTO support_tickets (user_id, category, subject, message, priority)
+    VALUES (?, ?, ?, ?, ?)
+  `),
+
+  getTicketsByUserId: db.prepare(`
+    SELECT * FROM support_tickets
+    WHERE user_id = ?
+    ORDER BY created_at DESC
+  `),
+
+  getTicketById: db.prepare(`
+    SELECT * FROM support_tickets WHERE id = ?
+  `),
+
+  updateTicketStatus: db.prepare(`
+    UPDATE support_tickets
+    SET status = ?, updated_at = CURRENT_TIMESTAMP
+    WHERE id = ?
+  `),
+
+  addTicketResponse: db.prepare(`
+    UPDATE support_tickets
+    SET admin_response = ?, admin_id = ?, responded_at = CURRENT_TIMESTAMP,
+        status = 'answered', updated_at = CURRENT_TIMESTAMP
+    WHERE id = ?
+  `),
+
+  getAllTickets: db.prepare(`
+    SELECT st.*, u.username, u.email
+    FROM support_tickets st
+    JOIN users u ON st.user_id = u.id
+    ORDER BY st.created_at DESC
+  `),
+
+  getTicketsByStatus: db.prepare(`
+    SELECT st.*, u.username, u.email
+    FROM support_tickets st
+    JOIN users u ON st.user_id = u.id
+    WHERE st.status = ?
+    ORDER BY st.created_at DESC
+  `),
+
+  // FAQ 관련
+  getAllFaqs: db.prepare(`
+    SELECT * FROM faqs
+    WHERE is_active = TRUE
+    ORDER BY category, order_index
+  `),
+
+  getFaqsByCategory: db.prepare(`
+    SELECT * FROM faqs
+    WHERE category = ? AND is_active = TRUE
+    ORDER BY order_index
+  `),
+
+  getFaqById: db.prepare(`
+    SELECT * FROM faqs WHERE id = ?
+  `),
+
+  searchFaqs: db.prepare(`
+    SELECT * FROM faqs
+    WHERE is_active = TRUE
+      AND (question LIKE ? OR answer LIKE ?)
+    ORDER BY view_count DESC
+  `),
+
+  incrementFaqViews: db.prepare(`
+    UPDATE faqs SET view_count = view_count + 1 WHERE id = ?
+  `),
+
+  createFaq: db.prepare(`
+    INSERT INTO faqs (category, question, answer, order_index)
+    VALUES (?, ?, ?, ?)
+  `),
+
+  updateFaq: db.prepare(`
+    UPDATE faqs
+    SET category = ?, question = ?, answer = ?, updated_at = CURRENT_TIMESTAMP
+    WHERE id = ?
+  `),
+
+  deleteFaq: db.prepare(`
+    UPDATE faqs SET is_active = FALSE WHERE id = ?
+  `),
+
+  // 버그 리포트 관련
+  createBugReport: db.prepare(`
+    INSERT INTO bug_reports (user_id, title, description, reproduction_steps,
+                             severity, device_info, browser_info, screenshots)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+  `),
+
+  getBugReportsByUserId: db.prepare(`
+    SELECT * FROM bug_reports
+    WHERE user_id = ?
+    ORDER BY created_at DESC
+  `),
+
+  getBugReportById: db.prepare(`
+    SELECT * FROM bug_reports WHERE id = ?
+  `),
+
+  getAllBugReports: db.prepare(`
+    SELECT br.*, u.username, u.email
+    FROM bug_reports br
+    LEFT JOIN users u ON br.user_id = u.id
+    ORDER BY br.created_at DESC
+  `),
+
+  updateBugReportStatus: db.prepare(`
+    UPDATE bug_reports
+    SET status = ?, admin_notes = ?, admin_id = ?,
+        resolved_at = CASE WHEN ? IN ('resolved', 'fixed') THEN CURRENT_TIMESTAMP ELSE resolved_at END,
+        updated_at = CURRENT_TIMESTAMP
+    WHERE id = ?
+  `),
+
+  getBugReportsByStatus: db.prepare(`
+    SELECT br.*, u.username, u.email
+    FROM bug_reports br
+    LEFT JOIN users u ON br.user_id = u.id
+    WHERE br.status = ?
+    ORDER BY br.created_at DESC
+  `),
+
+  // 챗봇 로그 관련
+  createChatbotLog: db.prepare(`
+    INSERT INTO chatbot_logs (user_id, session_id, user_message, bot_response, intent, confidence)
+    VALUES (?, ?, ?, ?, ?, ?)
+  `),
+
+  getChatbotLogsBySession: db.prepare(`
+    SELECT * FROM chatbot_logs
+    WHERE session_id = ?
+    ORDER BY created_at ASC
+  `),
+
+  getChatbotLogsByUserId: db.prepare(`
+    SELECT * FROM chatbot_logs
+    WHERE user_id = ?
+    ORDER BY created_at DESC
+    LIMIT 50
+  `)
+};
+
 export default db;
