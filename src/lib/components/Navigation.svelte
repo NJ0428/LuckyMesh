@@ -171,6 +171,18 @@
                   <a href="/vip" class="block px-4 py-2 text-sm text-gray-600 hover:bg-white/20 hover:text-primary-soft-purple transition-colors duration-200 font-poppins">
                     👑 VIP 라운지
                   </a>
+
+                  <!-- 고객센터 섹션 -->
+                  <div class="px-4 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider mt-2">고객센터</div>
+                  <a href="/support" class="block px-4 py-2 text-sm text-gray-600 hover:bg-white/20 hover:text-primary-soft-purple transition-colors duration-200 font-poppins">
+                    🎧 고객센터
+                  </a>
+                  <a href="/support/tickets" class="block px-4 py-2 text-sm text-gray-600 hover:bg-white/20 hover:text-primary-soft-purple transition-colors duration-200 font-poppins">
+                    📝 내 문의내역
+                  </a>
+                  <a href="/support/bug-report" class="block px-4 py-2 text-sm text-gray-600 hover:bg-white/20 hover:text-primary-soft-purple transition-colors duration-200 font-poppins">
+                    🐛 버그 리포트
+                  </a>
                   <a href="/settings" class="block px-4 py-2 text-sm text-gray-600 hover:bg-white/20 hover:text-primary-soft-purple transition-colors duration-200 font-poppins">
                     ⚙️ 설정
                   </a>
@@ -304,6 +316,18 @@
 
               <a href="/vip" class="block px-3 py-2 rounded-md text-white hover:bg-casino-gold/20 hover:text-casino-gold transition-colors duration-200">
                 👑 VIP 라운지
+              </a>
+
+              <!-- 고객센터 섹션 -->
+              <div class="px-3 py-2 text-xs font-semibold text-casino-gold/70 uppercase tracking-wider mt-2">고객센터</div>
+              <a href="/support" class="block px-3 py-2 rounded-md text-white hover:bg-casino-gold/20 hover:text-casino-gold transition-colors duration-200">
+                🎧 고객센터
+              </a>
+              <a href="/support/tickets" class="block px-3 py-2 rounded-md text-white hover:bg-casino-gold/20 hover:text-casino-gold transition-colors duration-200">
+                📝 내 문의내역
+              </a>
+              <a href="/support/bug-report" class="block px-3 py-2 rounded-md text-white hover:bg-casino-gold/20 hover:text-casino-gold transition-colors duration-200">
+                🐛 버그 리포트
               </a>
               <a href="/settings" class="block px-3 py-2 rounded-md text-white hover:bg-casino-gold/20 hover:text-casino-gold transition-colors duration-200">
                 ⚙️ 설정
