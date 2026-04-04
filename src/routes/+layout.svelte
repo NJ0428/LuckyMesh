@@ -3,6 +3,7 @@
   import Navigation from '$lib/components/Navigation.svelte';
   import Footer from '$lib/components/Footer.svelte';
   import DailyRewardNotification from '$lib/components/DailyRewardNotification.svelte';
+  import SupportChatBot from '$lib/components/SupportChatBot.svelte';
   import { onMount } from 'svelte';
   import { isAuthenticated } from '$lib/stores/auth.js';
   import {
@@ -14,6 +15,7 @@
 
   let showDailyRewardNotification = false;
   let dailyRewardData = null;
+  let showChatBot = false;
 
   onMount(async () => {
     // 브라우저 환경에서만 실행
@@ -90,4 +92,6 @@
     bind:show={showDailyRewardNotification}
     dailyRewardData={dailyRewardData}
   />
+
+  <SupportChatBot bind:isOpen={showChatBot} />
 </div>
