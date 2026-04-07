@@ -5,6 +5,7 @@
   import PastelCard from './PastelCard.svelte';
   import PastelButton from './PastelButton.svelte';
   import CoinFountain from './CoinFountain.svelte';
+  import { jackpotStore, checkJackpotWin, formatJackpotAmount } from '../stores/jackpot.js';
 
   export let betAmount = 100;
   export let onWin = () => {};
@@ -47,6 +48,12 @@
   async function spin() {
     if (!canSpin) return;
 
+    // 잭팟 적립 (베팅 시)
+    jackpotStore.contribute('slots', betAmount);
+
+    // 잭팟 자격 확인 (최소 베팅 금액 충족)
+    const jackpotEligible = betAmount >= 50;
+
     // 베팅 금액 차감
     slotStore.update(store => ({
       ...store,
@@ -54,7 +61,13 @@
       currentBet: betAmount,
       gameState: 'spinning',
       message: '스핀 중...',
-      result: []
+      result: [],
+      jackpot: {
+        eligible: jackpotEligible,
+        won: false,
+        amount: 0,
+        type: null
+      }
     }));
 
     showWinAnimation = false;
@@ -76,12 +89,48 @@
 
     // 스토어 업데이트
     slotStore.update(store => {
-      const newBalance = store.balance + totalWin;
+      let jackpotWon = false;
+      let jackpotAmount = 0;
+      let jackpotType = null;
+
+      // 잭팟 당첨 확인
+      if (jackpotEligible) {
+        const jackpotResult = checkJackpotWin('slots', betAmount);
+
+        if (jackpotResult.won) {
+          jackpotWon = true;
+
+          // 잭팟 금액 확인
+          let gameJackpotAmount = 0;
+          let globalJackpotAmount = 0;
+
+          const unsubscribe = jackpotStore.subscribe(state => {
+            gameJackpotAmount = state.games.slots.amount;
+            globalJackpotAmount = state.global.amount;
+          });
+          unsubscribe();
+
+          // 10% 확률로 전체 잭팟도 함께 당첨
+          const alsoWinsGlobal = Math.random() < 0.1;
+
+          jackpotAmount = gameJackpotAmount;
+          jackpotType = alsoWinsGlobal ? 'both' : 'game';
+
+          // 잭팟 당첨 처리
+          jackpotStore.win('slots', { username: '플레이어' });
+          if (alsoWinsGlobal) {
+            jackpotStore.win('global', { username: '플레이어' });
+            jackpotAmount += globalJackpotAmount;
+          }
+        }
+      }
+
+      const newBalance = store.balance + totalWin + (jackpotWon ? jackpotAmount : 0);
       const newStats = {
         ...store.stats,
         totalSpins: store.stats.totalSpins + 1,
         totalWins: totalWin > 0 ? store.stats.totalWins + 1 : store.stats.totalWins,
-        biggestWin: Math.max(store.stats.biggestWin, totalWin),
+        biggestWin: Math.max(store.stats.biggestWin, totalWin + (jackpotWon ? jackpotAmount : 0)),
         currentStreak: totalWin > 0 ? store.stats.currentStreak + 1 : 0,
         bestStreak: Math.max(store.stats.bestStreak,
           totalWin > 0 ? store.stats.currentStreak + 1 : store.stats.bestStreak)
@@ -99,6 +148,20 @@
         ...store.history.slice(0, 49) // 최근 50개 기록 유지
       ];
 
+      // 잭팟 메시지 생성
+      let message = '';
+      if (jackpotWon) {
+        if (jackpotType === 'both') {
+          message = `🎰🎰 MEGA JACKPIT! 🎰🎰 ${formatJackpotAmount(jackpotAmount)}원 당첨!!!`;
+        } else {
+          message = `🎰 JACKPOT! 🎰 ${formatJackpotAmount(jackpotAmount)}원 당첨!`;
+        }
+      } else if (totalWin > 0) {
+        message = `🎉 축하합니다! ${formatWinAmount(totalWin)}원 획득!`;
+      } else {
+        message = '다음 기회에 도전하세요!';
+      }
+
       return {
         ...store,
         balance: newBalance,
@@ -106,11 +169,15 @@
         winAmount: totalWin,
         totalWin: store.totalWin + totalWin,
         gameState: 'finished',
-        message: totalWin > 0
-          ? `🎉 축하합니다! ${formatWinAmount(totalWin)}원 획득!`
-          : '다음 기회에 도전하세요!',
+        message,
         history: newHistory,
-        stats: newStats
+        stats: newStats,
+        jackpot: {
+          eligible: jackpotEligible,
+          won: jackpotWon,
+          amount: jackpotAmount,
+          type: jackpotType
+        }
       };
     });
 
