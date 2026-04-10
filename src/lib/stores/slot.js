@@ -37,6 +37,14 @@ export const initialState = {
     biggestWin: 0,
     currentStreak: 0,
     bestStreak: 0
+  },
+
+  // 잭팟
+  jackpot: {
+    eligible: false,
+    won: false,
+    amount: 0,
+    type: null // 'game', 'global', 'both'
   }
 };
 

@@ -7,10 +7,19 @@
   import PastelCard from '../../lib/components/PastelCard.svelte';
   import PastelButton from '../../lib/components/PastelButton.svelte';
   import GameSettings from '../../lib/components/GameSettings.svelte';
+  import JackpotDisplay from '../../lib/components/JackpotDisplay.svelte';
+  import JackpotWinEffect from '../../lib/components/JackpotWinEffect.svelte';
+  import { jackpotStore, formatJackpotAmount } from '../../lib/stores/jackpot.js';
 
   let betAmount = 100;
   let showRules = false;
   let showStats = false;
+  let showJackpotWin = false;
+  let jackpotWinData = {
+    name: '',
+    amount: 0,
+    username: ''
+  };
 
   $: gameState = $slotStore;
   $: balance = gameState.balance;
@@ -30,10 +39,53 @@
 
   function handleWin(amount, winningLines) {
     console.log(`승리! ${amount}원 획득, 페이라인: ${winningLines.length}`);
+
+    // 잭팟 당첨 확인
+    if (gameState.jackpot && gameState.jackpot.won) {
+      showJackpotWinEffect();
+    }
   }
 
   function handleLose() {
     console.log('패배... 다음 기회에!');
+  }
+
+  function showJackpotWinEffect() {
+    const jackpotData = gameState.jackpot;
+    let jackpotName = '';
+    let totalAmount = 0;
+
+    if (jackpotData.type === 'both') {
+      jackpotName = 'MEGA JACKPOT + 슬롯 잭팟';
+      totalAmount = jackpotData.amount * 2; // 대략적인 계산
+    } else if (jackpotData.type === 'global') {
+      jackpotName = 'MEGA JACKPOT';
+      totalAmount = jackpotData.amount;
+    } else {
+      jackpotName = '슬롯 머신 잭팟';
+      totalAmount = jackpotData.amount;
+    }
+
+    jackpotWinData = {
+      name: jackpotName,
+      amount: totalAmount,
+      username: '나' // 실제로는 사용자 이름
+    };
+    showJackpotWin = true;
+  }
+
+  function closeJackpotEffect() {
+    showJackpotWin = false;
+    // 잭팟 상태 초기화
+    slotStore.update(store => ({
+      ...store,
+      jackpot: {
+        eligible: false,
+        won: false,
+        amount: 0,
+        type: null
+      }
+    }));
   }
 
   function formatWinAmount(amount) {
@@ -118,6 +170,11 @@
 
   <!-- 메인 게임 영역 -->
   <div class="max-w-7xl mx-auto px-4 py-8">
+    <!-- 잭팟 디스플레이 -->
+    <div class="mb-6">
+      <JackpotDisplay gameType="slots" />
+    </div>
+
     <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
       <!-- 게임 테이블 (주요 영역) -->
       <div class="lg:col-span-3">
@@ -259,6 +316,15 @@
       </div>
     </div>
   </div>
+
+  <!-- 잭팟 당첨 이펙트 -->
+  <JackpotWinEffect
+    show={showJackpotWin}
+    jackpotName={jackpotWinData.name}
+    amount={jackpotWinData.amount}
+    username={jackpotWinData.username}
+    onClose={closeJackpotEffect}
+  />
 
   <!-- 규칙 모달 -->
   {#if showRules}
