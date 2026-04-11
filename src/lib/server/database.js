@@ -460,10 +460,18 @@ const createDailyRewardsTable = db.prepare(`
     claimed_at DATETIME,
     expires_at DATETIME DEFAULT (datetime('now', '+24 hours')),
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
     UNIQUE(user_id, reward_date)
   )
 `);
+
+// 기존 daily_rewards 테이블에 updated_at 컬럼 추가 (마이그레이션)
+try {
+  db.prepare(`ALTER TABLE daily_rewards ADD COLUMN updated_at DATETIME DEFAULT CURRENT_TIMESTAMP`).run();
+} catch (e) {
+  // 컬럼이 이미 존재하면 무시
+}
 
 // 룰렛 뽑기 테이블 생성
 const createGachaSpinsTable = db.prepare(`
